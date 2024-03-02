@@ -1,0 +1,48 @@
+
+[{
+    "alignment_mode" : "",
+    "aperture_area" : 0,
+    "aperture_diameter" : 0,
+    "focal_length" : 0,
+
+    "equatorial_system" : "",
+    "does_refraction" : "False",
+    "slew_settle_time" : 0,
+    "tracking_rates" : [],
+    "axis_rates" : [],
+    
+    "site_elevation" : 0,
+    "site_latitude" : 0,
+    "site_longitude" : 0,
+
+    "can_find_home" : "False",
+
+    "can_park" : "False",
+    "can_unpark": "False",
+    "can_set_park" : "False",
+    "park_pos" : [0,0],
+
+    "can_set_DEC" : "False",
+    "can_set_RA" : "False"  ,        
+    "can_set_DEC_rate" : "False",
+    "can_set_RA_rate": "False",
+    "can_move_axis" : "False",
+
+    "can_slew" : "False",
+    "can_slew_async" : "False",
+    "can_slew_AltAz" : "False",
+    "can_slew_AltAz_async" : "False",
+
+    "can_set_tracking" : "False",
+    "can_set_sidereal_rate" : "False",
+
+    "can_pulse_guide" : "False",
+    "can_set_guide_rate" : "False",
+
+    "can_sync" : "False",
+    "can_sync_AltAz" : "False",
+
+    "can_set_pier_side" : "False"
+}]
+
+

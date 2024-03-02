@@ -1,0 +1,16 @@
+{
+    "drivers_RX" : 16,
+    "drivers_TX" : 17,
+    "step_primary" : 21,
+    "dir_primary" : 23,
+    "en_primary" : 13,
+    "step_secondary" : 18,
+    "dir_secondary" : 19,
+    "en_secondary" : 5,
+   
+    "GPS_RX" : 0,
+    "GPS_TX" : 0,
+
+    "end_RA" : 0,
+    "end_DEC" : 0
+}
