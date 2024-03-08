@@ -2,7 +2,7 @@ import ujson
 import uasyncio
 import uselect
 import socket
-from microdot import Microdot, Response
+from microdot import Microdot, Response, redirect
 from microdot.utemplate import Template 
 import network
 
@@ -151,7 +151,7 @@ class AlpacaServer:
             # call the requested method
             return getattr(AlpacaServer.devices[dev_type][dev_nr], request.method+"_"+method)(request)
         except CallArgError as e:
-            return str(e), 400
+            return str(e)+"lalalala", 400
         except RangeError as e:
             return AlpacaServer.devices[dev_type][dev_nr].reply(request, "", e.errnr, str(e))
         except NotImplementedError as e:
@@ -245,7 +245,7 @@ async def apicall(request,devtype,devnr,method):
     return AlpacaServer.callMethod(devtype, devnr, method, request)
 
 # root page, redirect to server setup page
-@alpaca_app.route('/')
+@alpaca_app.get('/')
 async def index(request):
     return redirect('/setup')
 

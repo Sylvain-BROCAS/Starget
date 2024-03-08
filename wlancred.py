@@ -1,2 +1,2 @@
-ssid = 'yourSSIDtest'
+ssid = 'starget'
 password = '00000000'

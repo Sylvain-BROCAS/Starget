@@ -11,10 +11,10 @@ async def main():
 
 
 # Create Alpaca Server
-srv = AlpacaServer("MyPicoServer", "RTJoe", "0.91", "Unknown")
+srv = AlpacaServer("Starget Server", "Sylvain BROCAS", "1", "Unknown")
 
 # Install switch device
-srv.installDevice("telescope", 0, Starget(0, "Pico W Switch", "2fba39e5-e84b-4d68-8aa5-fae287abc02d", "scope_config.json"))
+srv.installDevice("telescope", 0, Starget(0, "Starget", "2fba39e5-e84b-4d68-8aa5-fae287abc02d", "scope_config.json"))
 
 # Connect to WLAN
 AlpacaServer.startAccessPoint(wlancred.ssid, wlancred.password)

@@ -5,7 +5,7 @@ class AlpacaDevice:
     def __init__(self, devnr, devname, uniqueid):
         self.device_nr = devnr   # device id
         self.name = devname      # device name
-        self.description = "No description"  # device description
+        self.description = "Alpaca device description"  # device description
         self.driverinfo = "No driver info"   # device driver info
         self.interfaceVersion = 0            # interface version
         self.driverVersion = 0               # interface version
