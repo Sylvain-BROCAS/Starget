@@ -8,6 +8,7 @@ import network
 
 
 alpaca_app = Microdot()
+Template.initialize('templates')
 
 # Read JSON file from filename
 def readJson(filename):
@@ -149,9 +150,10 @@ class AlpacaServer:
             
         try:
             # call the requested method
+            print(getattr(AlpacaServer.devices[dev_type][dev_nr], request.method+"_"+method)(request))
             return getattr(AlpacaServer.devices[dev_type][dev_nr], request.method+"_"+method)(request)
         except CallArgError as e:
-            return str(e)+"lalalala", 400
+            return str(e), 400
         except RangeError as e:
             return AlpacaServer.devices[dev_type][dev_nr].reply(request, "", e.errnr, str(e))
         except NotImplementedError as e:
@@ -161,7 +163,7 @@ class AlpacaServer:
     # start Microdot Alpaca server
     @classmethod
     async def startServer(cls):
-            await alpaca_app.start_server(port=int(AlpacaServer.config["serverPort"]), debug=True)
+            await alpaca_app.start_server(port=int(AlpacaServer.config["serverPort"]), debug=False)
             
             
     # connect to WLAN in station mode            
@@ -271,10 +273,24 @@ async def get_mgmt_configureddevices(request):
 
 # server setup page
 @alpaca_app.route('/setup', methods=['GET', 'POST'])
-async def setup(req):
-    if req.method == 'POST':  # apply new settings on POST
-        AlpacaServer.config["serverPort"] = req.form.get('srvport')
-        AlpacaServer.config["discoveryPort"] = req.form.get('discport')
+async def setup(request):
+    if request.method == 'POST':  # apply new settings on POST
+        AlpacaServer.config["serverPort"] = request.form['srvport']
+        AlpacaServer.config["discoveryPort"] = request.form['discport']
         writeJson("servercfg.json", AlpacaServer.config)
     # render server setup page    
-    return Template('mipystep.html').render(title='ESP32 Alpaca server setup')
+    
+    tab =  []
+    for dev_type in AlpacaServer.devices.keys():
+        for dev in AlpacaServer.devices[dev_type]:
+            tab.append({
+                "DeviceType" : dev_type,
+                "DeviceNumber" : dev.device_nr,
+                "DeviceName" : dev.name,
+            })
+
+    return Template('mipystep.html').render(
+        title='ESP32 Alpaca server setup',
+        tab= tab,
+        srvcfg=AlpacaServer.config
+        )

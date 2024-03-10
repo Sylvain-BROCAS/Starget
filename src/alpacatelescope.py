@@ -56,7 +56,7 @@ class TelescopeDevice(AlpacaDevice):
         self.can_set_sidereal_rate = self.config[self.devnr]["can_set_sidereal_rate"]
 
         self.can_pulse_guide = self.config[self.devnr]["can_pulse_guide"]
-        self.can_set_guide_rate = self.config[self.devnr]["can_set_guide_rate"]
+        self.can_set_guide_rates = self.config[self.devnr]["can_set_guide_rates"]
 
         self.can_sync = self.config[self.devnr]["can_sync"]
         self.can_sync_AltAz = self.config[self.devnr]["can_sync_AltAz"]
@@ -131,9 +131,9 @@ class TelescopeDevice(AlpacaDevice):
     def set_does_refraction(self, value):
         self.does_refraction = value
     def PUT_doesrefraction(self, request):
-        if request.form.get('Value') is None:
+        if request.form['DoesRefraction'] is None:
             raise CallArgError("Invalid or missing value for does_refraction")
-        v = bool(request.form.get('Value'))
+        v = bool(request.form['DoesRefraction'])
         self.set_does_refraction(v)
         return self.reply(request, "")
 
@@ -143,9 +143,9 @@ class TelescopeDevice(AlpacaDevice):
     def set_slew_settle_time(self, value):
         self.slew_settle_time = value
     def PUT_slewsettletime(self, request):
-        if request.form('Value') is None:
+        if request.form['SlewSettleTime'] is None:
             raise CallArgError("Invalid or missing value for slew_settle_time")
-        v = float(request.form.get('Value'))
+        v = float(request.form['SlewSettleTime'])
         self.set_slew_settle_time(v)
         return self.reply(request, "")
     
@@ -161,9 +161,9 @@ class TelescopeDevice(AlpacaDevice):
     def set_site_elevation(self, value):
         self.site_elevation = value
     def PUT_siteelevation(self, request):
-        if request.form.get('Value') is None:
+        if request.form['SiteElevation'] is None:
             raise CallArgError("Invalid or missing value for site_elevation")
-        v = float(request.form.get('Value'))
+        v = float(request.form['SiteElevation'])
         self.set_site_elevation(v)
         return self.reply(request, "")
 
@@ -173,9 +173,9 @@ class TelescopeDevice(AlpacaDevice):
     def set_site_latitude(self, value):
         self.site_latitude = value
     def PUT_sitelatitude(self, request):
-        if request.form.get('Value') is None:
+        if request.form['SiteLatitude'] is None:
             raise CallArgError("Invalid or missing value for site_latitude")
-        v = float(request.form.get('Value'))
+        v = float(request.form['SiteLatitude'])
         self.set_site_latitude(v)
         return self.reply(request, "")
 
@@ -185,9 +185,9 @@ class TelescopeDevice(AlpacaDevice):
     def set_site_longitude(self, value):
         self.site_longitude = value
     def PUT_sitelongitude(self, request):
-        if request.form.get('Value') is None:
+        if request.form['SiteLongitude'] is None:
             raise CallArgError("Invalid or missing value for site_longitude")
-        v = float(request.form.get('Value'))
+        v = float(request.form['SiteLongitude'])
         self.set_site_longitude(v)
         return self.reply(request, "")
     
@@ -213,7 +213,7 @@ class TelescopeDevice(AlpacaDevice):
     def GET_cansetrightascensionrate(self, request):
         return self.reply(request, self.can_set_RA_rate)
 
-    def GET_cansetdeclinaitonrate(self, request):
+    def GET_cansetdeclinationrate(self, request):
         return self.reply(request, self.can_set_DEC_rate)
 
     def GET_canmoveaxis(self, request):
@@ -235,7 +235,7 @@ class TelescopeDevice(AlpacaDevice):
         return self.reply(request, self.can_set_tracking)
     # ---------------------------------------------------------------------------- #
     def GET_canpulseguide(self, request):
-        return self.reply(request, self.can_pulseguide)
+        return self.reply(request, self.can_pulse_guide)
     
     def GET_cansetguiderates(self, request):
         return self.reply(request, self.can_set_guide_rates)    
@@ -262,16 +262,16 @@ class TelescopeDevice(AlpacaDevice):
     def set_utc_date(self, date):
         self.UTC_date
     def PUT_utcdate(self, request):
-        if request.form.get('Value') is None:
+        if request.form['UTCDate'] is None:
             raise CallArgError("Invalid or missing value for UTC_date")
-        v = str(request.form.get('Value'))
+        v = str(request.form['UTCDate'])
         self.set_utc_date(v)
         return self.reply(request, "")
 
     # ---------------------------------------------------------------------------- #
     def get_RA(self):
         pass
-    def get_rightascension(self, request):
+    def GET_rightascension(self, request):
         RA = self.get_RA
         return self.reply(request, RA)
 
@@ -295,7 +295,7 @@ class TelescopeDevice(AlpacaDevice):
     # ---------------------------------------------------------------------------- #
     def get_RA_rate(self):
         pass
-    def get_rightascension_rate(self, request):
+    def GET_rightascensionrate(self, request):
         RA_rate = self.get_RA_rate()
         return self.reply(request, RA_rate)
 
@@ -304,15 +304,15 @@ class TelescopeDevice(AlpacaDevice):
     def PUT_rightascensionrate(self, request):
         if self.can_set_RA_rate == False:
             raise NotImplementedError("Right ascension rate can not be set.")
-        if request.form.get('Value') is None:
+        if request.form['RighAscensionRate'] is None:
             raise CallArgError("Invalid or missing value for RA_rate")
-        v = float(request.form['Value'])
+        v = float(request.form['RightAscensionRate'])
         self.set_RA_rate(v)
         return self.reply(request, "")
     
     def get_DEC_rate(self):
         pass
-    def GET_declination_rate(self, request):
+    def GET_declinationrate(self, request):
         DEC_rate = self.get_DEC_rate()
         return self.reply(request, DEC_rate)
 
@@ -321,9 +321,9 @@ class TelescopeDevice(AlpacaDevice):
     def PUT_declinationrate(self, request):
         if self.can_set_DEC_rate == False:
             raise NotImplementedError("Declination rate can not be set.")
-        if request.form.get('Value') is None:
+        if request.form['DeclinationRate'] is None:
             raise CallArgError("Invalid or missing value for DEC_rate")
-        v = float(request.form['Value'])
+        v = float(request.form['DeclinationRate'])
         self.set_DEC_rate(v)
         return self.reply(request, "")
     # ---------------------------------------------------------------------------- #
@@ -335,9 +335,9 @@ class TelescopeDevice(AlpacaDevice):
     def PUT_guideraterightascension(self, request):
         if self.can_set_guide_rate_RA == False:
             raise NotImplementedError("Guide rate right ascension can not be set.")
-        if request.form.get('Value') is None:
+        if request.form['GuideRateRightAscension'] is None:
             raise CallArgError("Invalid or missing value for guide_rate_RA")
-        v = float(request.form['Value'])
+        v = float(request.form['GuideRateRightAscension'])
         self.set_guide_rate_RA(v)
         return self.reply(request, "")
 
@@ -349,9 +349,9 @@ class TelescopeDevice(AlpacaDevice):
     def PUT_guideratedeclination(self, request):
         if self.can_set_guide_rate_DEC == False:
             raise NotImplementedError("Guide rate declination can not be set.")
-        if request.form.get('Value') is None:
+        if request.form['GuideRateDeclination'] is None:
             raise CallArgError("Invalid or missing value for guide_rate_DEC")
-        v = float(request.form['Value'])
+        v = float(request.form['GuiderateDeclination'])
         self.set_guide_rate_DEC(v)
         return self.reply(request, "")
     # ---------------------------------------------------------------------------- #
@@ -361,11 +361,13 @@ class TelescopeDevice(AlpacaDevice):
     def set_tracking_rate(self, value):
         self.tracking_rate = value
     def PUT_trackingrate(self, request):
-        if self.can_set_tracking_rate == False:
+        if self.can_set_sidereal_rate == False:
             raise NotImplementedError("Tracking rate can not be set.")
-        if request.form.get('Value') is None:
-            raise CallArgError("Invalid or missing value for guide_rate_RA")
-        v = float(request.form['Value'])
+        if request.form['TrackingRate'] is None:
+            raise CallArgError("Invalid or missing value for tracking_rate")
+
+        v = int(request.form['TrackingRate'])
+
         if v not in self.tracking_rates:
             raise CallArgError("Invalid value for tracking_rate, check available tracking rates")
         self.set_guide_rate_RA(v)
@@ -377,9 +379,9 @@ class TelescopeDevice(AlpacaDevice):
     def set_target_RA(self, value):
         self.target_RA = value
     def PUT_targetrightascension(self, request):
-        if request.form.get('Value') is None:
+        if request.form['TargetRightAscension'] is None:
             raise CallArgError("Invalid or missing value for target_RA")
-        v = float(request.form['Value'])
+        v = float(request.form['targetRightAscension'])
         self.set_target_RA(v)
         return self.reply(request, "")
 
@@ -389,9 +391,9 @@ class TelescopeDevice(AlpacaDevice):
     def set_target_DEC(self, value):
         self.target_DEC = value
     def PUT_targetdeclination(self, request):
-        if request.form.get('Value') is None:
+        if request.form['TargetDeclination'] is None:
             raise CallArgError("Invalid or missing value for target_DEC")
-        v = float(request.form['Value'])
+        v = float(request.form['TargetDeclination'])
         self.set_target_DEC(v)
         return self.reply(request, "")
     # ---------------------------------------------------------------------------- #
@@ -402,27 +404,27 @@ class TelescopeDevice(AlpacaDevice):
 
     # ------------------------------- Scope states ------------------------------- #
     def GET_athome(self, request):
-        return self.reply(request, self.is_home)
+        return self.reply(request, self.at_home)
 
     def GET_atpark(self, request):
-        return self.reply(request, self.is_parked)
+        return self.reply(request, self.at_park)
 
     def GET_slewing(self, request):
-        return self.reply(request, self.is_slewing)
+        return self.reply(request, self.slewing)
     
     def GET_tracking(self, request):
-        return self.reply(request, self.is_tracking)
+        return self.reply(request, self.tracking)
     
     def set_tracking_state(self, state):
         self.tracking = state
     def PUT_tracking(self, request):
         if self.can_set_tracking == False:
             raise NotImplementedError("Tracking state cannot be set")
-        if request.form.get('value') is None:
+        if request.form['Tracking'] is None:
             raise CallArgError("Invalid or missing value for tracking state")
-        v = bool(request.form.get('value'))
+        v = bool(request.form['Tracking'])
         self.set_tracking_state(v)
-        return self.reply(request, self.is_tracking)
+        return self.reply(request, self.tracking)
 
 
     def GET_ispulseguiding(self, request):
@@ -491,8 +493,8 @@ class TelescopeDevice(AlpacaDevice):
     def PUT_moveaxis(self, request):
         if self.can_move_axis == False:
             raise NotImplementedError("This telescope cannot move axis")
-        axis = int(request.form.get('Axis'))
-        rate = int(request.form.get('Rate'))
+        axis = float(request.form.get('Axis'))
+        rate = float(request.form.get('Rate'))
         self.move_axis(axis, rate) 
         return self.reply(request, "")
 
@@ -540,10 +542,14 @@ class TelescopeDevice(AlpacaDevice):
 
     def sync_to_coordinates(self):
         pass
-    def PUT_synctocoordinates(self, request):
-        raise NotImplementedError("Sync to coordinates not implemented")
-
-    def sync_to_target(self):
-        pass
     def PUT_synctotarget(self, request):
-        raise NotImplementedError("Sync to target not implemented")
+        raise NotImplementedError("SynctoCoordinates method not implemented")
+    
+    def sync_to_target(self):
+        self.RA = self.target_RA
+        self.DEC = self.target_DEC
+    def PUT_synctotarget(self, request):
+        if self.can_sync == "False":
+            raise NotImplementedError("Sync method not implemented. Change config file to update.")
+        self.sync_to_target()
+        return self.reply(request, "")

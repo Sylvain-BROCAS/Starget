@@ -77,6 +77,12 @@ class Starget(TelescopeDevice):
     def sync_to_Altaz(self):
         pass
 
-    def sync_to_target(self):
-        pass
-    
+    def sync_to_target(self, RA, DEC):
+        self.RA = RA
+        self.DEC = DEC
+    def PUT_synctocoordinates(self, request):
+        if self.can_sync == "False":
+            return NotImplementedError("Scope cannot sync to coordinates. Please change config file to ativate this method.")
+        RA = float(request.form["RightAscension"])
+        DEC = float(request.form["Declination"])
+        self.sync_to_coordinates(RA, DEC)
