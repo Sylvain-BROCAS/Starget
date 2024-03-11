@@ -7,7 +7,7 @@ from src.starget import Starget
 
 # Asyncio coroutine
 async def main():
-    await Alp  acaServer.startServer()
+    await AlpacaServer.startServer()
 
 
 # Create Alpaca Server
