@@ -4,13 +4,13 @@
     "step_primary" : 22,
     "dir_primary" : 23,
     "en_primary" : 21,
-    "step_secondary" : 18,
-    "dir_secondary" : 19,
-    "en_secondary" : 5,
+    "step_secondary" : 27,
+    "dir_secondary" : 26,
+    "en_secondary" : 13,
    
-    "GPS_RX" : 0,
-    "GPS_TX" : 0,
+    "GPS_RX" : 17,
+    "GPS_TX" : 16,
  
-    "end_RA" : 33,
-    "end_DEC" : 0
+    "end_RA" : 14,
+    "end_DEC" : 5
 }

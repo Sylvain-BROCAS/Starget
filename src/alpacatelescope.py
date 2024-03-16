@@ -1,5 +1,9 @@
 from src.alpacaserver import *
 from src.alpacadevice import AlpacaDevice
+from math import radians, degrees, cos, sin, acos, asin
+from machine import RTC
+
+rtc = RTC()
 
 # ASCOM Alpaca telescope device
 class TelescopeDevice(AlpacaDevice):
@@ -106,6 +110,21 @@ class TelescopeDevice(AlpacaDevice):
            raise CallArgError("Telescope ID invalid")
         return id
     
+    def UTC_time(self):
+        return 0
+    
+    def Altaz_to_equatorial(self, alt, az):
+        # Units conversion to radians
+        alt = radians(alt)
+        az = radians(az)
+        lat = radians(self.site_latitude)
+
+        # RA and DEC calculation
+        DEC = degrees(asin(sin(lat)*sin(alt)+cos(lat)*cos(az)))
+        HA = acos( (sin(alt)-sin(lat)*sin(DEC)) / (cos(lat)*cos(DEC)) )
+        RA = degrees(self.sidereal_time - HA)
+
+        return RA, DEC
     # ---------------------------------------------------------------------------- #
     #                             Define ASCOM methodes                             #
     # ---------------------------------------------------------------------------- #
@@ -179,7 +198,7 @@ class TelescopeDevice(AlpacaDevice):
         self.set_site_latitude(v)
         return self.reply(request, "")
 
-    def GET_sitelongitude(self, request):
+    async def GET_sitelongitude(self, request):
         return self.reply(request, self.site_longitude)
 
     def set_site_longitude(self, value):
@@ -247,26 +266,27 @@ class TelescopeDevice(AlpacaDevice):
         return self.reply(request, self.can_set_pier_side)
        
     # ---------------------- Telescope positioning methodes ---------------------- #
-    def get_sidereal_time(self):
-        pass
-    def GET_siderealtime(self, request):
-        sidereal_time = self.get_sidereal_time()
-        return self.reply(request, sidereal_time)
 
-    def get_utc_date(self):
-        pass
-    def GET_utcdate(self, request):
-        utd_date = self.get_utc_date()
-        return self.reply(request, utd_date)
+def get_sidereal_time(self): 
+    pass
+def GET_siderealtime(self, request):
+    sidereal_time = self.get_sidereal_time()
+    return self.reply(request, sidereal_time)
 
-    def set_utc_date(self, date):
-        self.UTC_date
-    def PUT_utcdate(self, request):
-        if request.form['UTCDate'] is None:
-            raise CallArgError("Invalid or missing value for UTC_date")
-        v = str(request.form['UTCDate'])
-        self.set_utc_date(v)
-        return self.reply(request, "")
+def get_utc_date(self):
+    pass
+def GET_utcdate(self, request):
+    utd_date = self.get_utc_date()
+    return self.reply(request, utd_date)
+
+def set_utc_date(self, date):
+    self.UTC_date
+def PUT_utcdate(self, request):
+    if request.form['UTCDate'] is None:
+        raise CallArgError("Invalid or missing value for UTC_date")
+    v = str(request.form['UTCDate'])
+    self.set_utc_date(v)
+    return self.reply(request, "")
 
     # ---------------------------------------------------------------------------- #
     def get_RA(self):
@@ -540,11 +560,15 @@ class TelescopeDevice(AlpacaDevice):
     def PUT_synctoaltaz(self, request):
         raise NotImplementedError("Sync to Altaz not implemented")
 
-    def sync_to_coordinates(self):
+    def sync_to_coordinates(self, RA, DEC):
         pass
     def PUT_synctotarget(self, request):
-        raise NotImplementedError("SynctoCoordinates method not implemented")
-    
+        if self.can_sync == "False":
+            return NotImplementedError("Scope cannot sync to coordinates. Please change config file to ativate this method.")
+        RA = float(request.form["RightAscension"])
+        DEC = float(request.form["Declination"])
+        self.sync_to_coordinates(RA, DEC)
+
     def sync_to_target(self):
         self.RA = self.target_RA
         self.DEC = self.target_DEC

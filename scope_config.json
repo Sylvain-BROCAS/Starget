@@ -17,15 +17,15 @@
 
     "can_find_home" : "True",
 
-    "can_park" : "True",
-    "can_unpark": "True",
-    "can_set_park" : "True",
+    "can_park" : "False",
+    "can_unpark": "False",
+    "can_set_park" : "False",
     "park_pos" : [0,0],
 
     "can_set_DEC" : "True",
     "can_set_RA" : "True"  ,        
-    "can_set_DEC_rate" : "True",
-    "can_set_RA_rate": "True",
+    "can_set_DEC_rate" : "False",
+    "can_set_RA_rate": "False",
     "can_move_axis" : "True",
 
     "can_slew" : "True",
@@ -35,7 +35,6 @@
 
     "can_set_tracking" : "True",
     "can_set_sidereal_rate" : "True",
-    "can_set_tracking_rate" : "True",
 
     "can_pulse_guide" : "False",
     "can_set_guide_rates" : "False",
