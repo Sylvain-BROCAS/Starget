@@ -135,3 +135,5 @@ templates/*.py
 .picowgo
 .vscode/
 lib/
+.micropico
+~$Starget.pptx
