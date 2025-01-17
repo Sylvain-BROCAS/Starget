@@ -28,6 +28,11 @@ class Starget(TelescopeDevice):
         self.s1 = Stepper(dir_pin=23, step_pin=22,steps_per_rev=200*8,speed_sps=500, en_pin=21,timer_id=-1)
         self.s2 = Stepper(dir_pin=26, step_pin=27,steps_per_rev=200*8,speed_sps=500, en_pin=13,timer_id=2)
 
+        self.slewing_speed = 500
+        self.tracking_speeds = [10, 20, 30] # Every tracking rate motor speed [stp/s]
+        self.r_mot_to_axis = 1/3
+        self.steps_per_degree = 200*8/360/self.r_mot_to_axis
+
         # End swithes
         self.endswitch_1 = Pin(self.config["end_RA"], Pin.IN, Pin.PULL_UP)
         self.endswitch_2 = Pin(self.config["end_DEC"], Pin.IN, Pin.PULL_UP)
@@ -64,6 +69,11 @@ class Starget(TelescopeDevice):
             for char in buf:
                 self.gps.update(chr(char))
     
+    def RA_to_steps(self, RA):
+        return int(RA/24 * 360 * self.steps_per_degree)
+    
+    def DEC_to_steps(self, DEC):
+        return int(DEC * self.steps_per_degree)
 
     # ---------------------------------------------------------------------------- #
     #                              Telescope functions                             #
@@ -89,27 +99,47 @@ class Starget(TelescopeDevice):
         self.s2.speed(20)
         self.s2.free_run(1)
         
-        
-    def park(self):
-        pass
-
-    def unpark(self):
-        pass
-
     def abort_slew(self):
-        pass
+        # Stop slewing
+        self.s1.stop()
+        self.s2.stop()
+        # Restart tracking
+        self.set_tracking(self.tracking)
 
-    def move_axis(self, axis, rate):
-        pass
+    def set_tracking(self, state):
+        self.tracking = state
+        if state:
+            self.s1.speed(self.tracking_speeds[self.tracking_rate])
+            self.s1.free_run(self.tracking_dir)
+            self.s2.stop()
+            s2_pos = self.s2.get_pos()
+            self.s2.target(s2_pos)
+            self.s2.track_target()
 
-    def slew_to_coordinates(self):
-        pass
+    def slew_to_coordinates(self, RA, DEC):
+        # Compute trajectory
+        delta_RA = min(24-RA+self.RA, RA-self.RA)
+        delta_RA_step = self.RA_to_steps(delta_RA)
+        delta_DEC = min(360-DEC+self.DEC, DEC-self.DEC)
+        delta_DEC_step = self.DEC_to_steps(delta_DEC)
+
+        # Set motors parameters
+        self.s1.speed(self.slew_speeds[delta_RA])
+        self.s2.speed(self.slew_speeds[delta_DEC])
+
+        # Start slew 
+        pos_RA = self.s1.get_pos()
+        pos_DEC = self.s2.get_pos()
+        self.s1.target(pos_RA + delta_RA_step)
+        self.s2.target(pos_DEC + delta_DEC_step)
+        self.s1.track_target()
+        self.s2.track_target()  
 
     def slew_to_Altaz(self):
         pass
 
     def slew_to_target(self):
-        pass
+        self.slew_to_coordinates(self.target_RA, self.target_DEC)
 
     # ------------------------- Synchronisation functions ------------------------ #
     def sync_to_coordinates(self, RA, DEC):

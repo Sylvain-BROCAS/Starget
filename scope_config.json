@@ -26,7 +26,7 @@
     "can_set_RA" : "True"  ,        
     "can_set_DEC_rate" : "False",
     "can_set_RA_rate": "False",
-    "can_move_axis" : "True",
+    "can_move_axis" : "False",
 
     "can_slew" : "True",
     "can_slew_async" : "False",
@@ -42,7 +42,9 @@
     "can_sync" : "True",
     "can_sync_AltAz" : "False",
 
-    "can_set_pier_side" : "False"
+    "can_set_pier_side" : "False",
+
+    "hemisphere" : "north"
 }]
 
 

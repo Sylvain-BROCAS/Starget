@@ -95,6 +95,12 @@ class TelescopeDevice(AlpacaDevice):
         self.is_pulse_guiding = False
         self.side_of_pier = ""
 
+        self.hemisphere = self.config[self.devnr]["hemisphere"]
+        if self.hemisphere == "north":
+            self.tracking_dir = 1
+        elif self.hemisphere == "south":
+            self.tracking_dir = -1
+
     # ----------------------------------- Utils ---------------------------------- #
     # get telescope id from request
     def get_device_id(self, request):
@@ -267,26 +273,26 @@ class TelescopeDevice(AlpacaDevice):
        
     # ---------------------- Telescope positioning methodes ---------------------- #
 
-def get_sidereal_time(self): 
-    pass
-def GET_siderealtime(self, request):
-    sidereal_time = self.get_sidereal_time()
-    return self.reply(request, sidereal_time)
+    def get_sidereal_time(self): 
+        pass
+    def GET_siderealtime(self, request):
+        sidereal_time = self.get_sidereal_time()
+        return self.reply(request, sidereal_time)
 
-def get_utc_date(self):
-    pass
-def GET_utcdate(self, request):
-    utd_date = self.get_utc_date()
-    return self.reply(request, utd_date)
+    def get_utc_date(self):
+        pass
+    def GET_utcdate(self, request):
+        utd_date = self.get_utc_date()
+        return self.reply(request, utd_date)
 
-def set_utc_date(self, date):
-    self.UTC_date
-def PUT_utcdate(self, request):
-    if request.form['UTCDate'] is None:
-        raise CallArgError("Invalid or missing value for UTC_date")
-    v = str(request.form['UTCDate'])
-    self.set_utc_date(v)
-    return self.reply(request, "")
+    def set_utc_date(self, date):
+        self.UTC_date
+    def PUT_utcdate(self, request):
+        if request.form['UTCDate'] is None:
+            raise CallArgError("Invalid or missing value for UTC_date")
+        v = str(request.form['UTCDate'])
+        self.set_utc_date(v)
+        return self.reply(request, "")
 
     # ---------------------------------------------------------------------------- #
     def get_RA(self):
@@ -435,7 +441,7 @@ def PUT_utcdate(self, request):
     def GET_tracking(self, request):
         return self.reply(request, self.tracking)
     
-    def set_tracking_state(self, state):
+    def set_tracking(self, state):
         self.tracking = state
     def PUT_tracking(self, request):
         if self.can_set_tracking == False:
@@ -443,7 +449,7 @@ def PUT_utcdate(self, request):
         if request.form['Tracking'] is None:
             raise CallArgError("Invalid or missing value for tracking state")
         v = bool(request.form['Tracking'])
-        self.set_tracking_state(v)
+        self.set_tracking(v)
         return self.reply(request, self.tracking)
 
 
@@ -513,15 +519,20 @@ def PUT_utcdate(self, request):
     def PUT_moveaxis(self, request):
         if self.can_move_axis == False:
             raise NotImplementedError("This telescope cannot move axis")
-        axis = float(request.form.get('Axis'))
-        rate = float(request.form.get('Rate'))
+        axis = float(request.form['Axis'])
+        rate = float(request.form['Rate'])
         self.move_axis(axis, rate) 
         return self.reply(request, "")
 
-    def slew_to_coordinates(self):
+    def slew_to_coordinates(self, RA, DEC):
         pass
     def PUT_slewtocoordinates(self, request):
-        pass
+        RA = float(request.form['RA'])
+        DEC = float(request.form['DEC'])
+        self.slew_to_coordinates(RA, DEC)
+        return self.reply(request, "")
+
+
 
     # Maybe a future feature
     def slew_to_coordinates_async(self):
@@ -543,7 +554,8 @@ def PUT_utcdate(self, request):
     def slew_to_target(self):
         pass
     def PUT_slewtotarget(self, request):
-        pass
+        self.slew_to_coordinates()
+        return self.reply(request, "")
 
     # Maybe a future feature
     def slew_to_target_async(self):
