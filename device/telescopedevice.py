@@ -1,272 +1,634 @@
-import threading
-from enum import Enum, IntEnum
+from threading import Timer, Lock
+from telescope_enum import *
+from utilities import *
+from logging import Logger
 
-# -------------------------- Enums to set parameters ------------------------- #
-class TelescopeStatus(Enum):
-    IDLE = 0
-    SLEWING = 1
-    TRACKING = 2
 
-class AlignmentModes(IntEnum):
-    algAltAz        = 0,
-    algPolar        = 1,
-    algGermanPolar  = 2
-
-class DriveRates(IntEnum):
-    driveSidereal   = 0,
-    driveLunar      = 1,
-    driveSolar      = 2,
-    driveKing       = 3
-
-class EquatorialCoordinateType(IntEnum):
-    equOther        = 0,
-    equTopocentric  = 1,
-    equJ2000        = 2,
-    equJ2050        = 3,
-    equB1950        = 4
-
-class GuideDirections(IntEnum):    # Shared by Camera
-    guideNorth      = 0,
-    guideSouth      = 1,
-    guideEast       = 2,
-    guideWest       = 3
-
-class PierSide(IntEnum):
-    pierEast        = 0,
-    pierWest        = 1,
-    pierUnknown     = -1
-
-class TelescopeAxes(IntEnum):
-    RA = 0,
-    DEC = 1
 
 class TelescopeDevice:
-    def __init__(self):
+    def __init__(self, logger:Logger):
         # Initialize telescope properties
-        self._lock = threading.Lock()
-        self._status = TelescopeStatus.IDLE
-        self._alignment_mode = AlignmentModes.ALGERMAN_POLAR  # Example, adjust as needed
-        self._aperture_area = 0.0
-        self._aperture_diameter = 0.0
-        self._at_home = False
-        self._at_park = False
-        self._is_tracking = False
-        self._target_ra = 0.0
-        self._target_dec = 0.0
+        self.logger = logger
+        self._lock: Lock = Lock()
+        self._connlock: Lock = Lock()
         self._timer = None
-        self._stopped = False
 
-    # Properties
+        # --------------------------- Telescope parameters --------------------------- #
+        # Example, adjust as needed
+        self._alignment_mode: AlignmentModes = AlignmentModes.algGermanPolar
+        self._equatorial_system = EquatorialCoordinateType.equJ2000
+        self._aperture_area: float = 0.0
+        self._aperture_diameter: float = 0.0
+        self._focal_length: float = 0.
+        self._slew_settle_time_sec: float = 0.0
+        self._tracking_rates: DriveRates = DriveRates.driveSidereal
+
+        self._does_refraction: bool = False
+        self._can_reverse: bool = True
+        self._can_find_home: bool = True
+        self._can_pulse_guide: bool = False
+        self._can_set_guiderates: bool = False
+        self._can_set_park: bool = False
+        self._can_set_pierside: bool = False
+        self._can_set_RA_rate: bool = True
+        self._can_set_DEC_rate: bool = True
+        self._can_set_tracking: bool = True
+        self._can_slew: bool = True
+        self._can_slew_async: bool = True
+        self._can_slew_altaz: bool = False
+        self._can_slew_altaz_async: bool = False
+        self._can_sync: bool = True
+        self._can_sync_altaz: bool = False
+        self._can_park: bool = True
+        self._can_unpark: bool = True
+
+        self._steps_per_sec: int = 6
+        self._conn_time_sec: float = 5.0    # Async connect delay
+        self._step_size: float = 1.0
+        # ----------------------------- Telescope status ----------------------------- #
+        self._connected: bool = False
+        self._connecting: bool = False
+        self._sync_write_connected: bool = True
+        
+        self._RA: float = 0.0
+        self._DEC: float = 0.0
+        self._at_home: bool = False
+        self._at_park: bool = False
+        self._side_of_pier: PierSide = PierSide.pierEast
+
+        self._is_tracking: bool = False
+        self._is_pulse_guiding: bool = False
+        self._is_moving: bool = False
+        self._stopped: bool = False
+        self._parked: bool = False
+
+        self._target_ra: float = 0.0
+        self._target_dec: float = 0.0
+        self._RA_rate: float = 0.0
+        self._DEC_rate: float = 0.0
+        self._guide_RA_rate: float = 0.0
+        self._guide_DEC_rate: float = 0.0
+
+        self._utc_date: str = ''
+        self._local_sidereal_time: float = 0.0
+        
+        
+    # ---------------------------------------------------------------------------- #
+    #                                  Properties                                  #
+    # ---------------------------------------------------------------------------- #
+
+    # -------------------------------- Connection -------------------------------- #
+    @property
+    def connected(self) -> bool:
+        self._connlock.acquire()
+        res = self._connected
+        self._connlock.release()
+        return res
+    @connected.setter
+    def connected(self, toconnect: bool) -> None:
+        self._connlock.acquire()
+        if (not toconnect) and self._connected and self._is_moving:
+            self._connlock.release()
+            # Yes you could call Halt() but this is for illustration
+            raise RuntimeError('Cannot disconnect while rotator is moving')
+        if toconnect:
+            if (self.sync_write_connected):
+                self._connected = True
+                self.logger.info('[instant connected]')
+                self._connlock.release()
+            else:
+                self._connlock.release()
+                self.logger.info('[delayed connecting]')
+                self.Connect()      # Does own locking
+        else:
+            self._connected = False
+            self._connlock.release()
+            self.logger.info('[instant disconnected]')
+
+    @property
+    def connecting(self) -> bool:
+        self._connlock.acquire()
+        res = self._connecting
+        self._connlock.release()
+        return res
+
+    # --------------------------- Telescope parameters --------------------------- #
+    @property
+    def SiteElevation(self) -> float:
+        self._lock.acquire()
+        res =  self._site_elevation
+        self._lock.release()
+        return res 
+    @SiteElevation.setter
+    def SiteElevation(self, elevation: float) -> None:
+        self._lock.acquire()
+        self._site_elevation = elevation
+        self._lock.release()
+        self.logger.debug(f'[Site elevation] {str(elevation)}')
+    
+    @property
+    def SiteLatitude(self) -> float:
+        self._lock.acquire()
+        res =  self._site_latitude
+        self._lock.release()
+        return res
+    @SiteLatitude.setter
+    def SiteLatitude(self, latitude: float) -> None:
+        self._lock.acquire()
+        self._site_latitude = latitude
+        self._lock.release()
+        self.logger.debug(f'[Site latitude] {str(latitude)}')
+
+    @property
+    def SiteLongitude(self) -> float:
+        self._lock.acquire()
+        res = self._site_longitude
+        self._lock.release()
+        return res
+    @SiteLongitude.setter
+    def SiteLongitude(self, longitude: float) -> None:
+        self._lock.acquire()
+        self._site_longitude = longitude
+        self._lock.release()
+        self.logger.debug(f'[Site longitude] {str(longitude)}')
+
     @property
     def AlignmentMode(self) -> AlignmentModes:
-        return self._alignment_mode
-
-    @property
-    def Altitude(self) -> float:
-        # Implementation here
-        pass
+        self._lock.acquire()
+        res = self._alignment_mode
+        self._lock.release()
+        return res
+    @AlignmentMode.setter
+    def AlignmentMode(self, mode: AlignmentModes) -> None:
+        self._lock.acquire()
+        self._alignment_mode = mode
+        self._lock.release()
+        self.logger.debug(f'[Alignment mode] {str(mode)}')
 
     @property
     def ApertureArea(self) -> float:
-        return self._aperture_area
-
+        self._lock.acquire()
+        res = self._aperture_area
+        self._lock.release()
+        return res
+    
     @property
     def ApertureDiameter(self) -> float:
-        return self._aperture_diameter
+        self._lock.acquire()
+        res = self._aperture_diameter
+        self._lock.release()
+        return res
+    
+    @property
+    def SlewSettleTime(self) -> float:
+        self._lock.acquire()
+        res = self._slew_settle_time_sec
+        self._lock.release()
+        return res
+    @SlewSettleTime.setter
+    def SlewSettleTime(self, time_sec: float) -> None:
+        self._lock.acquire()
+        self._slew_settle_time_sec = time_sec
+        self._lock.release()
+        self.logger.debug(f'[Slew settle time] {str(time_sec)}')
+    
 
     @property
+    def CanFindHome(self) -> bool:
+        self._lock.acquire()
+        res = self._can_find_home
+        self._lock.release()
+        return res
+    
+    @property
+    def CanPulseGuide(self) -> bool:
+        self._lock.acquire()
+        res = self._can_pulse_guide
+        self._lock.release()
+        return res
+    
+    @property
+    def CanSetGuiderates(self) -> bool:
+        self._lock.acquire()
+        res = self._can_set_guiderates
+        self._lock.release()
+        return res
+    
+    @property
+    def CanSetDECRate(self) -> bool:
+        self._lock.acquire()
+        res = self._can_set_DEC_rate
+        self._lock.release()
+        return res
+
+    @property
+    def CanSetTracking(self) -> bool:
+        self._lock.acquire()
+        res = self._can_set_tracking
+        self._lock.release()
+        return res
+    
+    @property
+    def CanSlew(self) -> bool:
+        self._lock.acquire()
+        res = self._can_slew
+        self._lock.release()
+        return res
+    
+    @property
+    def CanSlewAsync(self) -> bool:
+        self._lock.acquire()
+        res = self._can_slew_async
+        self._lock.release()
+        return res
+    
+    @property
+    def CanSlewAltaz(self) -> bool:
+        self._lock.acquire()
+        res = self._can_slew_altaz
+        self._lock.release()
+        return res
+    
+    @property
+    def CanSlewAltazAsync(self) -> bool:
+        self._lock.acquire()
+        res = self._can_slew_altaz_async
+        self._lock.release()
+        return res
+    
+    @property
+    def CanSync(self) -> bool:
+        self._lock.acquire()
+        res = self._can_sync
+        self._lock.release()
+        return res
+    
+    @property
+    def CanUnpark(self) -> bool:
+        self._lock.acquire()
+        res = self._can_unpark
+        self._lock.release()
+        return res
+    
+    @property
+    def CanPark(self) -> bool:
+        self._lock.acquire()
+        res = self._can_park
+        self._lock.release()
+        return res
+    
+    @property
+    def CanSetPark(self) -> bool:
+        self._lock.acquire()
+        res = self._can_set_park
+        self._lock.release()
+        return res
+    
+    @property
+    def CanSetPierside(self) -> bool:
+        self._lock.acquire()
+        res = self._can_set_pierside
+        self._lock.release()
+        return res
+    
+    @property
+    def CanSetRaRate(self) -> bool:
+        self._lock.acquire()
+        res = self._can_set_RA_rate
+        self._lock.release()
+        return res
+    
+    @property
+    def CanSetDecRate(self) -> bool:
+        self._lock.acquire()
+        res = self._can_set_DEC_rate
+        self._lock.release()
+        return res
+    
+    @property
+    def CanSyncAltaz(self) -> bool:
+        self._lock.acquire()
+        res = self._can_sync_altaz
+        self._lock.release()
+        return res
+    
+    @property
+    def DoesRefraction(self) -> bool:
+        self._lock.acquire()
+        res = self._does_refraction
+        self._lock.release()
+        return res
+    
+    @property
+    def EquatorialSystem(self) -> EquatorialCoordinateType:
+        self._lock.acquire()
+        res = self._equatorial_system
+        self._lock.release()
+        return res
+    
+    @property
+    def FocalLength(self) -> float:
+        self._lock.acquire()
+        res = self._focal_length
+        self._lock.release()
+        return res
+    
+    # ----------------------------- Telescope status ----------------------------- #
+    @property
+    def Altitude(self) -> float: # TODO: Convert to actual altitude
+        # Implementation here
+        return -1
+
+    @property
+    def Azimuth(self) -> float: # TODO: Convert to actual azimuth
+        # Implementation here
+        return -1
+    
+    @property
+    def RA(self) -> float:
+        self._lock.acquire()
+        res = self._RA
+        self._lock.release()
+        return res
+    @RA.setter
+    def RA(self, ra: float) -> None:
+        self._lock.acquire()
+        self._RA = ra
+        self._lock.release()
+        self.logger.debug(f'[RA] {str(ra)}')
+    
+    @property
+    def DEC(self) -> float:
+        self._lock.acquire()
+        res = self._DEC
+        self._lock.release()
+        return res
+    @DEC.setter
+    def DEC(self, dec: float) -> None:
+        self._lock.acquire()
+        self._DEC = dec
+        self._lock.release()
+        self.logger.debug(f'[DEC] {str(dec)}')
+
+    @property
+    def RA_Rate(self) -> float:
+        self._lock.acquire()
+        res = self._RA_rate
+        self._lock.release()
+        return res
+    @RA_Rate.setter
+    def RA_Rate(self, rate: float) -> None:
+        self._lock.acquire()
+        self._RA_rate = rate
+        self._lock.release()
+        self.logger.debug(f'[RA rate] {str(rate)}')
+    
+    @property
+    def RAGuideRate(self) -> float:
+        self._lock.acquire()
+        res = self._guide_RA_rate
+        self._lock.release()
+        return res
+    @RAGuideRate.setter
+    def RAGuideRate(self, rate: float) -> None:
+        self._lock.acquire()
+        self._guide_RA_rate = rate
+        self._lock.release()
+        self.logger.debug(f'[RA guide rate] {str(rate)}')
+
+    @property
+    def DEC_Rate(self) -> float:
+        self._lock.acquire()
+        res = self._DEC_rate
+        self._lock.release()
+        return res
+    @DEC_Rate.setter
+    def DEC_Rate(self, rate: float) -> None:
+        self._lock.acquire()
+        self._DEC_rate = rate
+        self._lock.release()
+        self.logger.debug(f'[DEC rate] {str(rate)}')
+    
+    @property
+    def DECGuideRate(self) -> float:
+        self._lock.acquire()
+        res = self._guide_DEC_rate
+        self._lock.release()
+        return res
+    @DECGuideRate.setter
+    def DECGuideRate(self, rate: float) -> None:
+        self._lock.acquire()
+        self._guide_DEC_rate = rate
+        self._lock.release()
+        self.logger.debug(f'[DEC guide rate] {str(rate)}')
+
+    @property
+    def IsPulseGuiding(self) -> bool:
+        self._lock.acquire()
+        res = self._is_pulse_guiding
+        self._lock.release()
+        return res
+    
+    @property
+    def Tracking(self) -> bool:
+        self._lock.acquire()
+        res = self._is_tracking
+        self._lock.release()
+        return res
+    @Tracking.setter
+    def Tracking(self, tracking: bool) -> None:
+        self._lock.acquire()
+        self._is_tracking = tracking
+        #TODO : start tracking method if tracking is True
+        self._lock.release()
+        self.logger.debug(f'[Tracking] {str(tracking)}')
+
+    @property
+    def TrackingRate(self) -> float:
+        self._lock.acquire()
+        res = self._tracking_rate
+        self._lock.release()
+        return res
+    @TrackingRate.setter
+    def TrackingRate(self, rate: float) -> None:
+        self._lock.acquire()
+        self._tracking_rate = rate
+        self._lock.release()
+        self.logger.debug(f'[Tracking rate] {str(rate)}')
+
+    @property
+    def TrackingRates(self) -> list[DriveRates]:
+        return [rate for rate in DriveRates]
+    
+    @property
     def AtHome(self) -> bool:
-        return self._at_home
+        self._lock.acquire()
+        res = self._at_home
+        self._lock.release()
+        return res
 
     @property
     def AtPark(self) -> bool:
-        return self._at_park
+        self._lock.acquire()
+        res = self._at_park
+        self._lock.release()
+        return res
+  
+    @property
+    def SideOfPier(self) -> PierSide:
+        self._lock.acquire()
+        res = self._side_of_pier
+        self._lock.release()
+        return res
+    @SideOfPier.setter
+    def SideOfPier(self, side) -> None:# TODO check if can set SOP
+        self._lock.acquire()
+        self._side_of_pier = side
+        self._lock.release()
+        self.logger.debug(f'[Side of pier] {str(side)}')
+    
+    @property
+    def TargetRightAscension(self) -> float:
+        self._lock.acquire()
+        res = self._target_ra
+        self._lock.release()
+        return res
+    @TargetRightAscension.setter
+    def TargetRightAscension(self, ra: float) -> None:
+        self._lock.acquire()
+        self._target_ra = ra
+        self._lock.release()
+        self.logger.debug(f'[Target RA] {str(ra)}')
 
     @property
-    def Azimuth(self) -> float:
+    def TargetDeclination(self) -> float:
+        self._lock.acquire()
+        res = self._target_declination
+        self._lock.release()
+        return res
+    @TargetDeclination.setter
+    def TargetDeclination(self, declination: float) -> None:
+        self._lock.acquire()
+        self._target_declination = declination
+        self._lock.release()
+        self.logger.debug(f'[Target declination] {str(declination)}')
+
+    
+    
+    # ---------------------------------- Others ---------------------------------- #
+    @property
+    def SiderealTime(self) -> float:
+        self._lock.acquire()
+        res = self._sidereal_time
+        self._lock.release()
+        return res
+    @SiderealTime.setter
+    def SiderealTime(self, sidereal_time: float) -> None:
+        self._lock.acquire()
+        self._sidereal_time = sidereal_time
+        self._lock.release()
+        self.logger.debug(f'[Sidereal time] {str(sidereal_time)}')
+
+    @property
+    def UTCDate(self):
+        self._lock.acquire()
+        res = self._utc_date
+        self._lock.release()
+        return res
+    @UTCDate.setter
+    def UTCDate(self, utc_date) -> None:
+        self._lock.acquire()
+        self._utc_date = utc_date
+        self._lock.release()
+        self.logger.debug(f'[UTC date] {str(utc_date)}')
+    # ---------------------------------------------------------------------------- #
+    #                                    Methods                                   #
+    # ---------------------------------------------------------------------------- #
+    # ------------------------ Connection related methods ------------------------ #
+    def Connect(self) -> None:
+        self.logger.debug(f'[Connect]')
+        self._connlock.acquire()
+        if self._connected:
+            self._connecting = False
+            self._connlock.release()
+            self.logger.debug(f'[Already connected]')
+            return
+        self._connecting = True
+        self._connected = False
+        self._connlock.release()
+        self._timer = Timer(self._conn_time_sec, self._conn_complete)
+        self._timer.name = 'Connect delay'
+        # print('[connect] now start the timer')
+        self._timer.start()
+
+    def Disconnect(self) -> None:
+        self.logger.debug(f'[Disconnect]')
+        self._connlock.acquire()
+        if not self._connected:
+            self._connecting = False
+            self._connlock.release()
+            self.logger.debug(f'[Already disconnected]')
+            return
+        if self._is_moving:
+            self._connlock.release()
+            # Yes you could call Halt() but this is for illustration
+            raise RuntimeError('Cannot disconnect while rotator is moving')
+        self._connected = False
+        self._connlock.release()
+
+    def _conn_complete(self):
+        self._connlock.acquire()
+        self.logger.info('[connected]')
+        self._connecting = False
+        self._connected = True
+        self._connlock.release()
+    # --------------------------- Slew related methods --------------------------- #
+    # Utilities
+    def Park(self):
         # Implementation here
         pass
-
-    # Add other properties here...
-
-    # Methods
-    def AbortSlew(self):
-        self.stop()
-
-    def AxisRates(self, Axis):
-        # Implementation here
-        pass
-
-    def CanMoveAxis(self, Axis):
-        # Implementation here
-        pass
-
     def FindHome(self):
         # Implementation here
         pass
 
-    def Park(self):
+    def AbortSlew(self):
         # Implementation here
-        self._at_park = True
+        pass
 
+    def SlewToAltAz(self, Altitude: float, Azimuth: float, Duration: float = 0.0):
+        # Implementation here
+        pass
+
+    def SlewToAltAzAsync(self, Altitude: float, Azimuth: float, Duration: float = 0.0):
+        # Implementation here
+        pass
+
+    def SlewToAltAzSync(self, Altitude: float, Azimuth: float, Duration: float = 0.0):
+        # Implementation here
+        pass
+
+    def SlewToCoordinates(self, RightAscension: float, Declination: float, Duration: float = 0.0):
+        # Implementation here
+        pass
+    def SlewToCoordinatesAsync(self, RightAscension: float, Declination: float, Duration: float = 0.0):
+        # Implementation here
+        pass
+
+    def SlewToTarget(self):
+        # Implementation here
+        pass
+
+    def SlewToTargetAsync(self):
+        # Implementation here
+        pass
+
+    # -------------------------- Guiding relatedmethods -------------------------- #
     def PulseGuide(self, Direction, Duration):
         # Implementation here
         pass
 
-    def SlewToAltAz(self, Azimuth, Altitude):
-        # Implementation here
-        pass
-
-    def start_slew(self, ra: float, dec: float) -> None:
-        self._lock.acquire()
-        self._target_ra = ra
-        self._target_dec = dec
-        self._status = TelescopeStatus.SLEWING
-        self.start()
-        self._lock.release()
-
-    def stop(self) -> None:
-        self._lock.acquire()
-        self._stopped = True
-        self._status = TelescopeStatus.IDLE
-        if self._timer is not None:
-            self._timer.cancel()
-        self._timer = None
-        self._lock.release()
-
-    def SyncToCoordinates(self, RightAscension, Declination):
-        # Implementation here
-        pass
-
-    def Unpark(self):
-        # Implementation here
-        self._at_park = False
-
-    # Helper methods
-    def ra(self) -> float:
-        return self.read_pos_RA()
-
-    def dec(self) -> float:
-        return self.read_pos_Dec()
-
-    def set_tracking(self, tracking: bool) -> None:
-        self._lock.acquire()
-        self._is_tracking = tracking
-        if self._status == TelescopeStatus.IDLE and tracking:
-            self._status = TelescopeStatus.TRACKING
-            self.start()
-        elif self._status == TelescopeStatus.TRACKING and not tracking:
-            self._status = TelescopeStatus.IDLE
-        self._lock.release()
-
-    # Add any other helper methods here...
-
-    # Internal methods
-    def start(self):
-        # Implementation for starting the telescope movement
-        pass
-
-    def read_pos_RA(self):
-        # Implementation for reading RA position
-        pass
-
-    def read_pos_Dec(self):
-        # Implementation for reading Dec position
-        pass
-
-    # Add any other internal methods here...
-        """
-        Get the aperture area of the telescope.
-
-        This property returns the area of the telescope's aperture,
-        which is the total light-collecting surface. The aperture area
-        is important for determining the telescope's light-gathering power.
-
-        Returns:
-            float: The aperture area of the telescope, typically in square millimeters.
-        """
-        return self._aperture_area
-
-
-    @property
-    def ApertureDiameter(self) -> float:
-        """
-        Get the aperture diameter of the telescope.
-
-        This property returns the diameter of the telescope's aperture,
-        which is the opening through which light enters the telescope.
-        The aperture diameter is a crucial factor in determining the
-        telescope's light-gathering ability and resolving power.
-
-        Returns:
-            float: The aperture diameter of the telescope, typically in millimeters.
-        """
-        return self._aperture_diameter
-
-
-    @property
-    def AtHome(self) -> bool:
-        """
-        Get the home status of the telescope.
-
-        This property indicates whether the telescope is currently at its home position.
-        The home position is typically a reference point used for calibration or
-        as a starting point for observations.
-
-        Returns:
-            bool: True if the telescope is at its home position, False otherwise.
-        """
-        return self._at_home
-
-
-
-    @property
-    def AtPark(self) -> bool:
-        """
-        Get the parking status of the telescope.
-
-        This property indicates whether the telescope is currently in its park position.
-        The park position is typically a safe and calibrated position for the telescope
-        when it's not in use.
-
-        Returns:
-            bool: True if the telescope is parked, False otherwise.
-        """
-        return self._at_park
-
-
-
-    @property
-    def Azimuth(self):
-        """
-        Calculate and return the current azimuth of the telescope.
-
-        This property method computes the telescope's current azimuth angle,
-        which is the horizontal angle measured clockwise from true north
-        to the direction the telescope is pointing.
-
-        Returns:
-            float: The current azimuth of the telescope in degrees,
-                   typically in the range [0, 360).
-
-        Note:
-            This is a placeholder implementation. The actual calculation
-            logic needs to be implemented based on the telescope's
-            current position and orientation.
-        """
-        # Implement logic to calculate current azimuth
-        pass
-
-
-    def AbortSlew(self):
-        """
-        Immediately stops any telescope slewing motion.
-
-        This method aborts any current slew operation and halts the telescope's movement.
-        """
-        self.stop()
-
-    def AxisRates(self, Axis):
+    # ---------------------- Telescope parameters related methods --------------------- #
+    def AxisRates(self, Axis:int) -> list:
         """
         Retrieves the rates at which the telescope can be moved about the specified axis.
 
@@ -278,9 +640,9 @@ class TelescopeDevice:
                               supported rates for the specified axis.
         """
         # Implement logic to return axis rates
-        pass
+        return []
 
-    def CanMoveAxis(self, Axis):
+    def CanMoveAxis(self, Axis:int) -> bool:
         """
         Indicates whether the telescope can move the requested axis.
 
@@ -291,53 +653,19 @@ class TelescopeDevice:
             bool: True if the axis can be moved, False otherwise.
         """
         # Implement logic to check if axis can be moved
-        pass
+        return False
 
-    def FindHome(self):
+    # ---------------------- Telescope state related method ---------------------- #
+    def Unpark(self):
         """
-        Moves the mount to the "home" position.
+        Unparks the mount.
 
-        This method instructs the telescope to search for its home position.
-        The operation may take a considerable amount of time to complete.
+        This method takes the telescope out of the parked state, allowing it to be slewed.
         """
-        # Implement logic to find home position
-        pass
+        # Implement logic to unpark the telescope
 
-    def Park(self):
-        """
-        Parks the mount.
 
-        This method moves the telescope to its park position and sets the AtPark property to True.
-        """
-        # Implement logic to park the telescope
-        pass
-
-    def PulseGuide(self, Direction, Duration):
-        """
-        Moves the scope in the given direction for the specified time.
-
-        Args:
-            Direction (GuideDirections): The direction in which to move the scope.
-            Duration (int): The duration of the movement in milliseconds.
-
-        Returns:
-            bool: True if the pulse guide was successfully completed, False otherwise.
-        """
-        # Implement logic for pulse guiding
-        pass
-
-    def SlewToAltAz(self, Azimuth, Altitude):
-        """
-        Synchronously slews the telescope to the given local horizontal coordinates.
-
-        Args:
-            Azimuth (float): The target azimuth in degrees.
-            Altitude (float): The target altitude in degrees.
-        """
-        # Implement logic to slew to Alt/Az coordinates
-        pass
-
-    def SyncToCoordinates(self, RightAscension, Declination):
+    def SyncToCoordinates(self, RightAscension, Declination) -> None:
         """
         Syncs the telescope to the specified equatorial coordinates.
 
@@ -347,76 +675,31 @@ class TelescopeDevice:
             RightAscension (float): The right ascension coordinate to sync to, in hours.
             Declination (float): The declination coordinate to sync to, in degrees.
         """
-        # Implement logic to sync to RA/Dec coordinates
-        pass
+        self._RA = RightAscension
+        self.Dec = Declination
 
-    def Unpark(self):
+    def SyncToAltAz(self, Altitude: float, Azimuth: float) -> None:
         """
-        Unparks the mount.
-
-        This method takes the telescope out of the parked state, allowing it to be slewed.
-        """
-        # Implement logic to unpark the telescope
-        pass
-
-
-    def start_slew(self, ra: float, dec: float) -> None:
-        """
-        Initiate a slew operation to move the telescope to a specified position.
-
-        This method sets the target Right Ascension (RA) and Declination (Dec) for the telescope,
-        changes the telescope status to SLEWING, and starts the movement process.
+        Syncs the telescope to the specified altitude and azimuth coordinates.
+        
+        This method instructs the telescope that it is pointing at the given altitude and azimuth coordinates.
 
         Args:
-            ra (float): The target Right Ascension in degrees.
-            dec (float): The target Declination in degrees.
-
-        Returns:
-            None
+            Altitude (float): The altitude coordinate to sync to, in degrees.
+            Azimuth (float): The azimuth coordinate to sync to, in degrees.
         """
-        self._lock.acquire()
-        self._target_ra = ra
-        self._target_dec = dec
-        self._status = TelescopeStatus.SLEWING
-        self.start()
-        self._lock.release()
+        self._alt = Altitude
+        self._az = Azimuth
+        # TODO : Update telescope position
 
-    def ra(self) -> float:
+    def SyncToTarget(self) -> None:
         """
-        Get the current Right Ascension (RA) of the telescope.
-
-        Returns:
-            float: The current Right Ascension in degrees.
+        Syncs the telescope to the current target.
+        
+        This method instructs the telescope to point at the current target.
         """
-        return self.read_pos_RA()
+        # Implement logic to sync to target
+        pass
 
-    def dec(self) -> float:
-        """
-        Get the current Declination (Dec) of the telescope.
-
-        Returns:
-            float: The current Declination in degrees.
-        """
-        return self.read_pos_Dec()
-
-    def set_tracking(self, tracking: bool) -> None:
-        """
-        Set the tracking state of the telescope.
-
-        This method enables or disables tracking mode. When tracking is enabled,
-        the telescope will continuously adjust its position to follow celestial objects.
-
-        Args:
-            tracking (bool): True to enable tracking, False to disable.
-
-        Returns:
-            None
-        """
-        self._lock.acquire()
-        self._is_tracking = tracking
-        if self._status == TelescopeStatus.IDLE and tracking:
-            self._status = TelescopeStatus.TRACKING
-            self.start()
-        elif self._status == TelescopeStatus.TRACKING and not tracking:
-            self._status = TelescopeStatus.IDLE
-        self._lock.release()
+    # --------------------------------- Utilities -------------------------------- #
+    

@@ -48,10 +48,9 @@ from config import Config
 from logging import Logger
 
 global logger
-#logger: Logger = None
-logger = None                   # Safe on Python 3.7 but no intellisense in VSCode etc.
+logger: Logger
 
-class Success:
+class Success(Exception):
     """Default err input to response classes, indicates success"""
 
     def __init__(self):
@@ -73,7 +72,7 @@ class Success:
     def Message(self) -> str:
         return self.message
 
-class ActionNotImplementedException:
+class ActionNotImplementedException():
     """Requested ``Action()`` is not implemented"""
     def __init__(
             self,

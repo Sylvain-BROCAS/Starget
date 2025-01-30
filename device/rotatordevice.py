@@ -85,7 +85,7 @@ class RotatorDevice:
         self._step_size: float = 1.0
         self._steps_per_sec: int = 6
         self._conn_time_sec: float = 5.0    # Async connect delay
-        self._sync_write_connected = True;
+        self._sync_write_connected = True
         #
         # Rotator device state variables
         #

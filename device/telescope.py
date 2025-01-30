@@ -19,7 +19,7 @@ from shr import PropertyResponse, MethodResponse, PreProcessRequest, \
 from exceptions import *        # Nothing but exception classes
 from telescopedevice import TelescopeDevice
 
-logger: Logger = None
+logger: Logger
     
 # ----------------------
 # MULTI-INSTANCE SUPPORT
@@ -47,7 +47,7 @@ class TelescopeMetadata:
     MaxDeviceNumber = maxdev
     InterfaceVersion = 4 ##YOUR DEVICE INTERFACE VERSION##        # ITelescopeVxxx
 
-tel_dev = None
+tel_dev: TelescopeDevice
 # At app init not import :-)
 def start_tel_device(logger: Logger):
     logger = logger
@@ -58,84 +58,76 @@ def start_tel_device(logger: Logger):
     tel_dev.steps_per_sec = Config.steps_per_sec
     tel_dev.sync_write_connected = Config.sync_write_connected
 
-# --------------
-# SYMBOLIC ENUMS
-# --------------
-#
-from enum import IntEnum
-    axisPrimary     = 0,
-    axisSecondary   = 1,
-    axisTertiary    = 2
-
 # --------------------
 # RESOURCE CONTROLLERS
 # --------------------
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class action:
     def on_put(self, req: Request, resp: Response, devnum: int):
         resp.text = MethodResponse(req, NotImplementedException()).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class commandblind:
     def on_put(self, req: Request, resp: Response, devnum: int):
         resp.text = MethodResponse(req, NotImplementedException()).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class commandbool:
     def on_put(self, req: Request, resp: Response, devnum: int):
         resp.text = MethodResponse(req, NotImplementedException()).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class commandstring:
     def on_put(self, req: Request, resp: Response, devnum: int):
         resp.text = MethodResponse(req, NotImplementedException()).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class connect:
     def on_put(self, req: Request, resp: Response, devnum: int):
         try:
             # ------------------------
-            ### CONNECT THE DEVICE ###
+            tel_dev.Connect()
             # ------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Connect failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+
+@before(PreProcessRequest(maxdev)) 
 class connected:
     def on_get(self, req: Request, resp: Response, devnum: int):
         try:
             # -------------------------------------
-            is_connecting = ### READ CONN STATE ###
+            is_connecting: bool = tel_dev.connected
             # -------------------------------------
-            resp.text = PropertyResponse(is_conn, req).json
+            resp.text = PropertyResponse(is_connecting, req).json
         except Exception as ex:
             resp.text = MethodResponse(req, DriverException(0x500, 'Telescope.Connected failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class connecting:
     def on_get(self, req: Request, resp: Response, devnum: int):
         try:
             # ------------------------------
-            val = ## GET CONNECTING STATE ##
+            val = tel_dev.connecting
             # ------------------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Connecting failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class description:
     def on_get(self, req: Request, resp: Response, devnum: int):
         resp.text = PropertyResponse(TelescopeMetadata.Description, req).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO : to complete
 class devicestate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -150,174 +142,174 @@ class devicestate:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'telescope.Devicestate failed', ex)).json
 
-
+@before(PreProcessRequest(maxdev))
 class disconnect:
     def on_put(self, req: Request, resp: Response, devnum: int):
         try:
             # ---------------------------
-            ### DISCONNECT THE DEVICE ###
+            tel_dev.Disconnect()
             # ---------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Disconnect failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class driverinfo:
     def on_get(self, req: Request, resp: Response, devnum: int):
         resp.text = PropertyResponse(TelescopeMetadata.Info, req).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class interfaceversion:
     def on_get(self, req: Request, resp: Response, devnum: int):
         resp.text = PropertyResponse(TelescopeMetadata.InterfaceVersion, req).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class driverversion():
     def on_get(self, req: Request, resp: Response, devnum: int):
         resp.text = PropertyResponse(TelescopeMetadata.Version, req).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class name():
     def on_get(self, req: Request, resp: Response, devnum: int):
         resp.text = PropertyResponse(TelescopeMetadata.Name, req).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class supportedactions:
     def on_get(self, req: Request, resp: Response, devnum: int):
         resp.text = PropertyResponse([], req).json  # Not PropertyNotImplemented
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class abortslew:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.AbortSlew()
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Abortslew failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class alignmentmode:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.AlignmentMode
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Alignmentmode failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class altitude:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.Altitude
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Altitude failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class aperturearea:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.ApertureArea
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Aperturearea failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class aperturediameter:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.ApertureArea
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Aperturediameter failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class athome:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val =  tel_dev.AtHome
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Athome failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class atpark:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.AtPark
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Atpark failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class axisrates:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -336,54 +328,54 @@ class axisrates:
 
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.AxisRates(axis)
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Axisrates failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class azimuth:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.Azimuth
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Azimuth failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class canfindhome:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanFindHome
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Canfindhome failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class canmoveaxis:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -402,313 +394,313 @@ class canmoveaxis:
 
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanMoveAxis(axis)
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Canmoveaxis failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class canpark:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanPark
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Canpark failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class canpulseguide:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanPulseGuide
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Canpulseguide failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class cansetdeclinationrate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanSetDECRate
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Cansetdeclinationrate failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class cansetguiderates:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanSetGuiderates
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Cansetguiderates failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class cansetpark:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanSetPark
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Cansetpark failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class cansetpierside:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanSetPierside
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Cansetpierside failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class cansetrightascensionrate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanSetRaRate
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Cansetrightascensionrate failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class cansettracking:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanSetTracking
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Cansettracking failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class canslew:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanSlew
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Canslew failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO Handle can = false
 class canslewaltaz:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanSlewAltaz
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Canslewaltaz failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO Handle can = false
 class canslewaltazasync:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanSlewAltazAsync
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Canslewaltazasync failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class canslewasync:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanSlewAsync
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Canslewasync failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class cansync:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanSync
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Cansync failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class cansyncaltaz:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanSyncAltaz
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Cansyncaltaz failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class canunpark:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.CanUnpark
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Canunpark failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class declination:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.DEC
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Declination failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class declinationrate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.DEC_Rate
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -716,7 +708,7 @@ class declinationrate:
                             DriverException(0x500, 'Telescope.Declinationrate failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -731,18 +723,18 @@ class declinationrate:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.DEC_Rate = declinationrate
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Declinationrate failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO : implement get and set
 class destinationsideofpier:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -772,18 +764,18 @@ class destinationsideofpier:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Destinationsideofpier failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO : implement put
 class doesrefraction:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.DoesRefraction
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -791,7 +783,7 @@ class doesrefraction:
                             DriverException(0x500, 'Telescope.Doesrefraction failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -813,72 +805,72 @@ class doesrefraction:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Doesrefraction failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class equatorialsystem:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.EquatorialSystem
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Equatorialsystem failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class findhome:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.FindHome()
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Findhome failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class focallength:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.FocalLength
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Focallength failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class guideratedeclination:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.DECGuideRate
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -886,7 +878,7 @@ class guideratedeclination:
                             DriverException(0x500, 'Telescope.Guideratedeclination failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -901,25 +893,25 @@ class guideratedeclination:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.DECGuideRate = guideratedeclination
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Guideratedeclination failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class guideraterightascension:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.RAGuideRate
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -927,7 +919,7 @@ class guideraterightascension:
                             DriverException(0x500, 'Telescope.Guideraterightascension failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -942,36 +934,36 @@ class guideraterightascension:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.RAGuideRate = guideraterightascension
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Guideraterightascension failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class ispulseguiding:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.IsPulseGuiding
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Ispulseguiding failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO : implement get and put methods
 class moveaxis:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1005,29 +997,29 @@ class moveaxis:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Moveaxis failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class park:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.Park()
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Park failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO : Guiding not implemented yet
 class pulseguide:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1055,42 +1047,44 @@ class pulseguide:
         try:
             # -----------------------------
             ### DEVICE OPERATION(PARAM) ###
+            resp.text = MethodResponse(req,
+                            NotImplementedError(0x500, "Guiding not implemented")).json
             # -----------------------------
-            resp.text = MethodResponse(req).json
+            #resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Pulseguide failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class rightascension:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.RA
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Rightascension failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class rightascensionrate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.RA_Rate
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1098,7 +1092,7 @@ class rightascensionrate:
                             DriverException(0x500, 'Telescope.Rightascensionrate failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1113,7 +1107,7 @@ class rightascensionrate:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.RA_Rate = rightascensionrate
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
@@ -1124,7 +1118,7 @@ class rightascensionrate:
 class setpark:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1138,18 +1132,18 @@ class setpark:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Setpark failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO : handle "can set SOP = False"
 class sideofpier:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.SideOfPier
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1157,7 +1151,7 @@ class sideofpier:
                             DriverException(0x500, 'Telescope.Sideofpier failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1176,43 +1170,43 @@ class sideofpier:
 
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            #tel_dev.SideOfPier = sideofpier  # TODO: update telescope property | Handle exceptions 
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Sideofpier failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class siderealtime:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.SiderealTime
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Siderealtime failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO : handle "can set elevation = False"
 class siteelevation:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.SiteElevation
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1220,7 +1214,7 @@ class siteelevation:
                             DriverException(0x500, 'Telescope.Siteelevation failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1235,25 +1229,25 @@ class siteelevation:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SiteElevation = siteelevation  # TODO: update telescope property | Handle exceptions  
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Siteelevation failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class sitelatitude:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.SiteLatitude
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1261,7 +1255,7 @@ class sitelatitude:
                             DriverException(0x500, 'Telescope.Sitelatitude failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1273,28 +1267,28 @@ class sitelatitude:
             resp.text = MethodResponse(req,
                             InvalidValueException(f'SiteLatitude {sitelatitudestr} not a valid number.')).json
             return
-        ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
+        ###! RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SiteLatitude = sitelatitude
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Sitelatitude failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class sitelongitude:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.SiteLongitude
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1302,7 +1296,7 @@ class sitelongitude:
                             DriverException(0x500, 'Telescope.Sitelongitude failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1314,21 +1308,21 @@ class sitelongitude:
             resp.text = MethodResponse(req,
                             InvalidValueException(f'SiteLongitude {sitelongitudestr} not a valid number.')).json
             return
-        ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
+        ###! RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SiteLongitude = sitelongitude
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Sitelongitude failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO : implement get and put
 class slewing:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1342,18 +1336,18 @@ class slewing:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Slewing failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class slewsettletime:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.SlewSettleTime
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1361,7 +1355,7 @@ class slewsettletime:
                             DriverException(0x500, 'Telescope.Slewsettletime failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1376,18 +1370,18 @@ class slewsettletime:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SlewSettleTime = slewsettletime
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewsettletime failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO : check conditions and handle exceptions
 class slewtoaltaz:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1410,18 +1404,18 @@ class slewtoaltaz:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SlewToAltAz(azimuth, altitude)
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtoaltaz failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO : check conditions and handle exceptions
 class slewtoaltazasync:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1444,18 +1438,18 @@ class slewtoaltazasync:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SlewToAltAzAsync(azimuth, altitude)
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtoaltazasync failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO : check conditions and handle exceptions
 class slewtocoordinates:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1478,18 +1472,18 @@ class slewtocoordinates:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SlewToCoordinates(rightascension, declination)
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtocoordinates failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) # TODO : check conditions and handle exceptions
 class slewtocoordinatesasync:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1512,54 +1506,54 @@ class slewtocoordinatesasync:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SlewToCoordinatesAsync(rightascension, declination)
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtocoordinatesasync failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class slewtotarget:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SlewToTarget()
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtotarget failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class slewtotargetasync:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SlewToTargetAsync()
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Slewtotargetasync failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class synctoaltaz:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1582,18 +1576,18 @@ class synctoaltaz:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SyncToAltAz(azimuth, altitude)
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Synctoaltaz failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class synctocoordinates:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1616,43 +1610,43 @@ class synctocoordinates:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SyncToCoordinates(rightascension, declination)
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Synctocoordinates failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class synctotarget:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.SyncToTarget()
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Synctotarget failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class targetdeclination:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.TargetDeclination
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1660,7 +1654,7 @@ class targetdeclination:
                             DriverException(0x500, 'Telescope.Targetdeclination failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1675,25 +1669,25 @@ class targetdeclination:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.TargetRightAscension = targetrightascension
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Targetdeclination failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class targetrightascension:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.TargetRightAscension
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1701,7 +1695,7 @@ class targetrightascension:
                             DriverException(0x500, 'Telescope.Targetrightascension failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1716,25 +1710,25 @@ class targetrightascension:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.TargetRightAscension = targetrightascension
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Targetrightascension failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class tracking:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.Tracking
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1742,7 +1736,7 @@ class tracking:
                             DriverException(0x500, 'Telescope.Tracking failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1757,25 +1751,25 @@ class tracking:
 
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.Tracking = tracking  # TODO: Implement tracking control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Tracking = True if tracking else False  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement tracking control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Tracking = True if tracking else False  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement tracking control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Tracking = True if tracking else False  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement tracking control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Tracking = True if tracking
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Tracking failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev)) 
 class trackingrate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.TrackingRate
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1783,7 +1777,7 @@ class trackingrate:
                             DriverException(0x500, 'Telescope.Trackingrate failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1798,43 +1792,43 @@ class trackingrate:
         ### RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.TrackingRate = trackingrate  # TODO: Implement tracking rate control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.TrackingRate = trackingrate  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement tracking rate control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.TrackingRate = trackingrate  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement tracking rate control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.TrackingRate = trackingrate  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement tracking rate control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.TrackingRate = trackingrate
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Trackingrate failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class trackingrates:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.TrackingRates
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                             DriverException(0x500, 'Telescope.Trackingrates failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class utcdate:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
-        if not ##IS DEV CONNECTED##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # ----------------------
-            val = ## GET PROPERTY ##
+            val = tel_dev.UTCDate
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1842,7 +1836,7 @@ class utcdate:
                             DriverException(0x500, 'Telescope.Utcdate failed', ex)).json
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
@@ -1851,25 +1845,25 @@ class utcdate:
         ### INTEPRET AS NEEDED OR FAIL ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.UTCDate = utcdate  # TODO: Implement setting UTC date. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
                             DriverException(0x500, 'Telescope.Utcdate failed', ex)).json
 
-@before(PreProcessRequest(maxdev)) # TODO
+@before(PreProcessRequest(maxdev))
 class unpark:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
-        if not ## IS DEV CONNECTED ##:
+        if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                             NotConnectedException()).json
             return
         
         try:
             # -----------------------------
-            ### DEVICE OPERATION(PARAM) ###
+            tel_dev.Unpark()  # TODO: Implement unparking. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Unpark()  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement unparking. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Unpark()  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement unparking. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Unpark()  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement unparking. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Unpark()  # Note: This is a placeholder, actual
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
