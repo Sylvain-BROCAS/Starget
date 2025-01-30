@@ -1,4 +1,5 @@
 from threading import Timer, Lock
+from device.telescope_enum import EquatorialCoordinateType, PierSide
 from telescope_enum import *
 from utilities import *
 from logging import Logger
@@ -8,9 +9,9 @@ from logging import Logger
 class TelescopeDevice:
     def __init__(self, logger:Logger):
         # Initialize telescope properties
-        self.logger = logger
-        self._lock: Lock = Lock()
-        self._connlock: Lock = Lock()
+        self.logger: Logger = logger
+        self._lock = Lock()
+        self._connlock = Lock()
         self._timer = None
 
         # --------------------------- Telescope parameters --------------------------- #
@@ -22,9 +23,9 @@ class TelescopeDevice:
         self._focal_length: float = 0.
         self._slew_settle_time_sec: float = 0.0
         self._tracking_rates: DriveRates = DriveRates.driveSidereal
+        self._axis_rate: AxisRates = AxisRates.axisRateSlow
 
         self._does_refraction: bool = False
-        self._can_reverse: bool = True
         self._can_find_home: bool = True
         self._can_pulse_guide: bool = False
         self._can_set_guiderates: bool = False
@@ -39,6 +40,8 @@ class TelescopeDevice:
         self._can_slew_altaz_async: bool = False
         self._can_sync: bool = True
         self._can_sync_altaz: bool = False
+        self._can_sync_to_target: bool = False
+        self._can_sync_to_target_async: bool = False
         self._can_park: bool = True
         self._can_unpark: bool = True
 
@@ -54,24 +57,26 @@ class TelescopeDevice:
         self._DEC: float = 0.0
         self._at_home: bool = False
         self._at_park: bool = False
-        self._side_of_pier: PierSide = PierSide.pierEast
+        self._side_of_pier: PierSide = PierSide.pierUnknown
 
         self._is_tracking: bool = False
         self._is_pulse_guiding: bool = False
         self._is_moving: bool = False
         self._stopped: bool = False
         self._parked: bool = False
+        self._slewing: bool = False
 
         self._target_ra: float = 0.0
         self._target_dec: float = 0.0
-        self._RA_rate: float = 0.0
-        self._DEC_rate: float = 0.0
+        self._RA_rate: float = 0.0 # ["/SI s]
+        self._DEC_rate: float = 0.0 # ["/SI s]
         self._guide_RA_rate: float = 0.0
         self._guide_DEC_rate: float = 0.0
 
         self._utc_date: str = ''
         self._local_sidereal_time: float = 0.0
         
+        # ----------------------------------- Setup ---------------------------------- #
         
     # ---------------------------------------------------------------------------- #
     #                                  Properties                                  #
@@ -92,7 +97,7 @@ class TelescopeDevice:
             # Yes you could call Halt() but this is for illustration
             raise RuntimeError('Cannot disconnect while rotator is moving')
         if toconnect:
-            if (self.sync_write_connected):
+            if (self._sync_write_connected):
                 self._connected = True
                 self.logger.info('[instant connected]')
                 self._connlock.release()
@@ -112,7 +117,7 @@ class TelescopeDevice:
         self._connlock.release()
         return res
 
-    # --------------------------- Telescope parameters --------------------------- #
+    # --------------------------- Site properties --------------------------- #
     @property
     def SiteElevation(self) -> float:
         self._lock.acquire()
@@ -152,6 +157,7 @@ class TelescopeDevice:
         self._lock.release()
         self.logger.debug(f'[Site longitude] {str(longitude)}')
 
+    # --------------------------- Telescope properties --------------------------- #
     @property
     def AlignmentMode(self) -> AlignmentModes:
         self._lock.acquire()
@@ -192,7 +198,53 @@ class TelescopeDevice:
         self._lock.release()
         self.logger.debug(f'[Slew settle time] {str(time_sec)}')
     
+    @property
+    def EquatorialSystem(self) -> EquatorialCoordinateType:
+        self._lock.acquire()
+        res: EquatorialCoordinateType = self._equatorial_system
+        self._lock.release()
+        return res
+    @EquatorialSystem.setter
+    def EquatorialSystem(self, system: EquatorialCoordinateType) -> None:
+        self._lock.acquire()
+        self._equatorial_system = system
+        self._lock.release()
+        self.logger.debug(f'[Equatorial system] {str(system)}')
 
+    @property
+    def FocalLength(self) -> float:
+        self._lock.acquire()
+        res: float = self._focal_length
+        self._lock.release()
+        return res
+    
+    @property
+    def StepSize(self) -> float:
+        self._lock.acquire()
+        res: float = self._step_size
+        self._lock.release()
+        return res
+    @StepSize.setter
+    def StepSize(self, step_size: float) -> None:
+        self._lock.acquire()
+        self._step_size = step_size
+        self._lock.release()
+        self.logger.debug(f'[Step size] {str(step_size)}')
+    
+    @property
+    def StepPerSec(self) -> int:
+        self._lock.acquire()
+        res: int = self._steps_per_sec
+        self._lock.release()
+        return res
+    @StepPerSec.setter
+    def StepPerSec(self, steps_per_sec: int) -> None:
+        self._lock.acquire()
+        self._steps_per_sec = steps_per_sec
+        self._lock.release()
+        self.logger.debug(f'[Steps per second] {str(steps_per_sec)}')
+     
+    # -------------------------- Telescope capabilities -------------------------- #
     @property
     def CanFindHome(self) -> bool:
         self._lock.acquire()
@@ -243,14 +295,14 @@ class TelescopeDevice:
         return res
     
     @property
-    def CanSlewAltaz(self) -> bool:
+    def CanSlewAltAz(self) -> bool:
         self._lock.acquire()
         res = self._can_slew_altaz
         self._lock.release()
         return res
     
     @property
-    def CanSlewAltazAsync(self) -> bool:
+    def CanSlewAltAzAsync(self) -> bool:
         self._lock.acquire()
         res = self._can_slew_altaz_async
         self._lock.release()
@@ -306,7 +358,7 @@ class TelescopeDevice:
         return res
     
     @property
-    def CanSyncAltaz(self) -> bool:
+    def CanSyncAltAz(self) -> bool:
         self._lock.acquire()
         res = self._can_sync_altaz
         self._lock.release()
@@ -319,20 +371,11 @@ class TelescopeDevice:
         self._lock.release()
         return res
     
-    @property
-    def EquatorialSystem(self) -> EquatorialCoordinateType:
         self._lock.acquire()
-        res = self._equatorial_system
+        self._can_reverse = reverse
         self._lock.release()
-        return res
-    
-    @property
-    def FocalLength(self) -> float:
-        self._lock.acquire()
-        res = self._focal_length
-        self._lock.release()
-        return res
-    
+        self.logger.debug(f'[Can reverse] {str(reverse)}')
+
     # ----------------------------- Telescope status ----------------------------- #
     @property
     def Altitude(self) -> float: # TODO: Convert to actual altitude
@@ -358,20 +401,7 @@ class TelescopeDevice:
         self.logger.debug(f'[RA] {str(ra)}')
     
     @property
-    def DEC(self) -> float:
-        self._lock.acquire()
-        res = self._DEC
-        self._lock.release()
-        return res
-    @DEC.setter
-    def DEC(self, dec: float) -> None:
-        self._lock.acquire()
-        self._DEC = dec
-        self._lock.release()
-        self.logger.debug(f'[DEC] {str(dec)}')
-
-    @property
-    def RA_Rate(self) -> float:
+    def RA_Rate(self) -> float:# NOTE: Returns rate as arc"/sidereal second
         self._lock.acquire()
         res = self._RA_rate
         self._lock.release()
@@ -395,6 +425,20 @@ class TelescopeDevice:
         self._guide_RA_rate = rate
         self._lock.release()
         self.logger.debug(f'[RA guide rate] {str(rate)}')
+
+        
+    @property
+    def DEC(self) -> float:# NOTE: Returns rate as arc"/sidereal second
+        self._lock.acquire()
+        res = self._DEC
+        self._lock.release()
+        return res
+    @DEC.setter
+    def DEC(self, dec: float) -> None:
+        self._lock.acquire()
+        self._DEC = dec
+        self._lock.release()
+        self.logger.debug(f'[DEC] {str(dec)}')
 
     @property
     def DEC_Rate(self) -> float:
@@ -423,12 +467,12 @@ class TelescopeDevice:
         self.logger.debug(f'[DEC guide rate] {str(rate)}')
 
     @property
-    def IsPulseGuiding(self) -> bool:
+    def Slewing(self) -> bool:
         self._lock.acquire()
-        res = self._is_pulse_guiding
+        res = self._slewing
         self._lock.release()
         return res
-    
+
     @property
     def Tracking(self) -> bool:
         self._lock.acquire()
@@ -455,7 +499,14 @@ class TelescopeDevice:
         self._tracking_rate = rate
         self._lock.release()
         self.logger.debug(f'[Tracking rate] {str(rate)}')
-
+    
+    @property
+    def PulseGuiding(self) -> bool:
+        self._lock.acquire()
+        res = self._is_pulse_guiding
+        self._lock.release()
+        return res
+    
     @property
     def TrackingRates(self) -> list[DriveRates]:
         return [rate for rate in DriveRates]
@@ -481,7 +532,7 @@ class TelescopeDevice:
         self._lock.release()
         return res
     @SideOfPier.setter
-    def SideOfPier(self, side) -> None:# TODO check if can set SOP
+    def SideOfPier(self, side) -> None:
         self._lock.acquire()
         self._side_of_pier = side
         self._lock.release()
@@ -622,13 +673,29 @@ class TelescopeDevice:
         # Implementation here
         pass
 
+    def DestinationSideOfPier(self, ra, dec) -> PierSide:
+        lst = get_lst()
+
+        ha = lst - ra
+
+        # Normalisation de HA entre -12 et +12 heures
+        if ha < -12:
+            ha += 24
+        elif ha > 12:
+            ha -= 24
+        # Détermination du côté du pilier en fonction de HA
+        if -6 <= ha <= 6:
+            return PierSide.pierEast
+        else:
+            return PierSide.pierWest
+
     # -------------------------- Guiding relatedmethods -------------------------- #
     def PulseGuide(self, Direction, Duration):
         # Implementation here
         pass
 
     # ---------------------- Telescope parameters related methods --------------------- #
-    def AxisRates(self, Axis:int) -> list:
+    def AxisRates(self, Axis:int) -> list[int]: # NOTE : Both axes have the same rates range
         """
         Retrieves the rates at which the telescope can be moved about the specified axis.
 
@@ -640,7 +707,7 @@ class TelescopeDevice:
                               supported rates for the specified axis.
         """
         # Implement logic to return axis rates
-        return []
+        return [e.value for e in AxisRates]
 
     def CanMoveAxis(self, Axis:int) -> bool:
         """

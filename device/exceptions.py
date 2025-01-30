@@ -72,7 +72,7 @@ class Success(Exception):
     def Message(self) -> str:
         return self.message
 
-class ActionNotImplementedException():
+class ActionNotImplementedException(Exception):
     """Requested ``Action()`` is not implemented"""
     def __init__(
             self,
@@ -161,7 +161,7 @@ class DriverException:
     def Message(self) -> str:
         return self.fullmsg
 
-class InvalidOperationException:
+class InvalidOperationException(Exception):
     """The client asked for something that can't be done"""
     def __init__(
             self,
@@ -188,7 +188,7 @@ class InvalidOperationException:
     def Message(self) -> str:
         return self.message
 
-class InvalidValueException:
+class InvalidValueException(Exception):
     """A value given is invalid or out of range"""
     def __init__(
             self,
@@ -215,7 +215,7 @@ class InvalidValueException:
     def Message(self) -> str:
         return self.message
 
-class NotConnectedException:
+class NotConnectedException(Exception):
     """The device must be connected and is not at this time"""
     def __init__(
             self,
@@ -242,7 +242,7 @@ class NotConnectedException:
     def Message(self) -> str:
         return self.message
 
-class NotImplementedException:
+class NotImplementedException(Exception):
     """The requested property or method is not implemented"""
     def __init__(
             self,
@@ -269,7 +269,7 @@ class NotImplementedException:
     def Message(self) -> str:
         return self.message
 
-class OperationCancelledException:
+class OperationCancelledException(Exception):
     """An (asynchronous) in-progress operation has been cancelled"""
     def __init__(
             self,
@@ -296,7 +296,7 @@ class OperationCancelledException:
     def Message(self) -> str:
         return self.message
 
-class ParkedException:
+class ParkedException(Exception):
     """Cannot do this while the device is parked"""
     def __init__(
             self,
@@ -323,7 +323,7 @@ class ParkedException:
     def Message(self) -> str:
         return self.message
 
-class SlavedException:
+class SlavedException(Exception):
     """Cannot do this while the device is slaved"""
     def __init__(
             self,
@@ -350,7 +350,7 @@ class SlavedException:
     def Message(self) -> str:
         return self.message
 
-class ValueNotSetException:
+class ValueNotSetException(Exception):
     """The requested vzalue has not yet een set"""
     def __init__(
             self,

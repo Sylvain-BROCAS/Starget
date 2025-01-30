@@ -37,3 +37,10 @@ class TelescopeAxes(IntEnum):
     axisPrimary     = 0
     axisSecondary   = 1
     axisTertiary    = 2
+
+class AxisRates(IntEnum):
+    axisRateVerySlow    = 0
+    axisRateSlow    = 1
+    axisRateMedium = 2
+    axisRateFast    = 3
+    axisRateVeryFast = 4
