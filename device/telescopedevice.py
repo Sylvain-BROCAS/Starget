@@ -1,9 +1,8 @@
 from threading import Timer, Lock
-from device.telescope_enum import EquatorialCoordinateType, PierSide
 from telescope_enum import *
 from utilities import *
 from logging import Logger
-
+from motor_controle import MKSMotorController
 
 
 class TelescopeDevice:
@@ -77,6 +76,8 @@ class TelescopeDevice:
         self._local_sidereal_time: float = 0.0
         
         # ----------------------------------- Setup ---------------------------------- #
+        self._RA_motor = MKSMotorController("0x04", 4, 115200)
+        self._DEC_motor = MKSMotorController("0x05", 4, 115200)
         
     # ---------------------------------------------------------------------------- #
     #                                  Properties                                  #
@@ -113,7 +114,7 @@ class TelescopeDevice:
     @property
     def connecting(self) -> bool:
         self._connlock.acquire()
-        res = self._connecting
+        res: bool = self._connecting
         self._connlock.release()
         return res
 
@@ -262,7 +263,7 @@ class TelescopeDevice:
     @property
     def CanSetGuiderates(self) -> bool:
         self._lock.acquire()
-        res = self._can_set_guiderates
+        res: bool = self._can_set_guiderates
         self._lock.release()
         return res
     
@@ -376,6 +377,12 @@ class TelescopeDevice:
         self._lock.release()
         self.logger.debug(f'[Can reverse] {str(reverse)}')
 
+    @property
+    def CanSyncToTarget(self) -> bool:
+        self._lock.acquire()
+        res: bool = self._can_sync_to_target
+        self._lock.release()
+        return res
     # ----------------------------- Telescope status ----------------------------- #
     @property
     def Altitude(self) -> float: # TODO: Convert to actual altitude
@@ -635,45 +642,72 @@ class TelescopeDevice:
         self._connlock.release()
     # --------------------------- Slew related methods --------------------------- #
     # Utilities
-    def Park(self):
-        # Implementation here
-        pass
-    def FindHome(self):
+    def Park(self) -> None:
+        self._RA_motor.return_to_zero()
+        self._DEC_motor.return_to_zero()
+    
+    def FindHome(self) -> None:
+        # Home RA axis
+        self._RA_motor.move_by_angle(-180)
+        while self._RA_motor.is_moving():
+            if is_RA_homed():
+                self._RA_motor.stop()
+                self._at_home = True
+                break
+        if not self._at_home:
+            self._RA_motor.move_by_angle(360)
+            while self._RA_motor.is_moving():
+                if is_RA_homed():
+                    self._RA_motor.stop()
+                    self._at_home = True
+                    break
+        # Home DEC axis
+        self._DEC_motor.move_by_angle(-90)
+        while self._DEC_motor.is_moving():
+            if is_DEC_homed():
+                self._DEC_motor.stop()
+                self._at_park = True
+                break
+        if not self._at_park:
+            self._DEC_motor.move_by_angle(180)
+            while self._DEC_motor.is_moving():
+                if is_DEC_homed():
+                    self._DEC_motor.stop()
+                    self._at_park = True
+                    break
+
+    def AbortSlew(self) -> None:
+        self._RA_motor.stop()
+        self._DEC_motor.stop()
+
+    def SlewToAltAz(self, Altitude: float, Azimuth: float, Duration: float = 0.0):# TODO
         # Implementation here
         pass
 
-    def AbortSlew(self):
+    def SlewToAltAzAsync(self, Altitude: float, Azimuth: float, Duration: float = 0.0):# TODO
         # Implementation here
         pass
 
-    def SlewToAltAz(self, Altitude: float, Azimuth: float, Duration: float = 0.0):
+    def SlewToAltAzSync(self, Altitude: float, Azimuth: float, Duration: float = 0.0):# TODO
         # Implementation here
         pass
 
-    def SlewToAltAzAsync(self, Altitude: float, Azimuth: float, Duration: float = 0.0):
+    def SlewToCoordinates(self, RightAscension: float, Declination: float, Duration: float = 0.0):# TODO
+        # Implementation here
+        pass
+    def SlewToCoordinatesAsync(self, RightAscension: float, Declination: float, Duration: float = 0.0):# TODO
         # Implementation here
         pass
 
-    def SlewToAltAzSync(self, Altitude: float, Azimuth: float, Duration: float = 0.0):
+    def SlewToTarget(self):# TODO
         # Implementation here
         pass
 
-    def SlewToCoordinates(self, RightAscension: float, Declination: float, Duration: float = 0.0):
-        # Implementation here
-        pass
-    def SlewToCoordinatesAsync(self, RightAscension: float, Declination: float, Duration: float = 0.0):
+    def SlewToTargetAsync(self):# TODO
         # Implementation here
         pass
 
-    def SlewToTarget(self):
-        # Implementation here
-        pass
-
-    def SlewToTargetAsync(self):
-        # Implementation here
-        pass
-
-    def DestinationSideOfPier(self, ra, dec) -> PierSide:
+    def DestinationSideOfPier(self, ra, dec) -> PierSide:# TODO
         lst = get_lst()
 
         ha = lst - ra
@@ -690,17 +724,17 @@ class TelescopeDevice:
             return PierSide.pierWest
 
     # -------------------------- Guiding relatedmethods -------------------------- #
-    def PulseGuide(self, Direction, Duration):
+    def PulseGuide(self, Direction, Duration):# TODO
         # Implementation here
         pass
 
     # ---------------------- Telescope parameters related methods --------------------- #
-    def AxisRates(self, Axis:int) -> list[int]: # NOTE : Both axes have the same rates range
+    def AxisRates(self, Axis:int) -> list[int]: # NOTE : Both axes have the same rates range# TODO
         """
         Retrieves the rates at which the telescope can be moved about the specified axis.
 
         Args:
-            Axis (TelescopeAxes): The axis for which to retrieve the rates.
+            Axis (TelescopeAxes): The axis for which to retrieve the rates##########################################.
 
         Returns:
             List[DriveRates]: A collection of DriveRates objects representing the 
@@ -709,7 +743,7 @@ class TelescopeDevice:
         # Implement logic to return axis rates
         return [e.value for e in AxisRates]
 
-    def CanMoveAxis(self, Axis:int) -> bool:
+    def CanMoveAxis(self, Axis:int) -> bool:# TODO
         """
         Indicates whether the telescope can move the requested axis.
 
@@ -723,7 +757,7 @@ class TelescopeDevice:
         return False
 
     # ---------------------- Telescope state related method ---------------------- #
-    def Unpark(self):
+    def Unpark(self):# TODO
         """
         Unparks the mount.
 
@@ -732,7 +766,7 @@ class TelescopeDevice:
         # Implement logic to unpark the telescope
 
 
-    def SyncToCoordinates(self, RightAscension, Declination) -> None:
+    def SyncToCoordinates(self, RightAscension, Declination) -> None:# TODO
         """
         Syncs the telescope to the specified equatorial coordinates.
 
@@ -745,7 +779,7 @@ class TelescopeDevice:
         self._RA = RightAscension
         self.Dec = Declination
 
-    def SyncToAltAz(self, Altitude: float, Azimuth: float) -> None:
+    def SyncToAltAz(self, Altitude: float, Azimuth: float) -> None:# TODO
         """
         Syncs the telescope to the specified altitude and azimuth coordinates.
         
@@ -759,7 +793,7 @@ class TelescopeDevice:
         self._az = Azimuth
         # TODO : Update telescope position
 
-    def SyncToTarget(self) -> None:
+    def SyncToTarget(self) -> None:# TODO
         """
         Syncs the telescope to the current target.
         

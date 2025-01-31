@@ -13,13 +13,12 @@
 # ??-???-????   abc Initial edit
 
 from falcon import Request, Response, HTTPBadRequest, before
-from device.telescope_enum import AlignmentModes, EquatorialCoordinateType, PierSide
 from logging import Logger
 from shr import PropertyResponse, MethodResponse, PreProcessRequest, \
     StateValue, get_request_field, to_bool
 from exceptions import *        # Nothing but exception classes
 from telescopedevice import TelescopeDevice
-from templates.telescope import TelescopeAxes
+from telescope_enum import *
 
 logger: Logger
 
@@ -173,7 +172,7 @@ class devicestate:
             val.append(StateValue('DoesRefraction', tel_dev.DoesRefraction))
             val.append(StateValue('EquatorialSystem', tel_dev.EquatorialSystem))
             val.append(StateValue('FocalLength', tel_dev.FocalLength))
-            val.append(StateValue('IsPulseGuiding', tel_dev.IsPulseGuiding))
+            val.append(StateValue('IsPulseGuiding', tel_dev.PulseGuiding))
             val.append(StateValue('IsTracking', tel_dev.Tracking))
             val.append(StateValue('RA', tel_dev.RA))
             val.append(StateValue('RA_Rate', tel_dev.RA_Rate))
@@ -1490,7 +1489,7 @@ class sitelongitude:
                                        DriverException(0x500, 'Telescope.Sitelongitude failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev))  # TODO : implement get and put
+@before(PreProcessRequest(maxdev))
 class slewing:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
@@ -1501,7 +1500,7 @@ class slewing:
 
         try:
             # ----------------------
-            val =  # GET PROPERTY ##
+            val: bool = tel_dev.Slewing
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1562,7 +1561,7 @@ class slewtoaltaz:
             return
 
         # Raises 400 bad request if missing
-        azimuthstr = get_request_field('Azimuth', req)
+        azimuthstr: str = get_request_field('Azimuth', req)
         try:
             azimuth = float(azimuthstr)
         except:
@@ -1571,7 +1570,7 @@ class slewtoaltaz:
             return
         # RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         # Raises 400 bad request if missing
-        altitudestr = get_request_field('Altitude', req)
+        altitudestr: str = get_request_field('Altitude', req)
         try:
             altitude = float(altitudestr)
         except:
@@ -1830,7 +1829,10 @@ class synctotarget:
 
         try:
             # -----------------------------
-            tel_dev.SyncToTarget()
+            if tel_dev.CanSyncToTarget:
+                tel_dev.SyncToTarget()
+            else:
+                raise InvalidValueException('SyncToTarget not supported by this telescope')
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
@@ -1838,7 +1840,7 @@ class synctotarget:
                                        DriverException(0x500, 'Telescope.Synctotarget failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev))
+@before(PreProcessRequest(maxdev)) # NOTE : May have to limit limit to prevent mechanical interferences
 class targetdeclination:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
@@ -1849,7 +1851,7 @@ class targetdeclination:
 
         try:
             # ----------------------
-            val = tel_dev.TargetDeclination
+            val: float = tel_dev.TargetDeclination
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1873,7 +1875,7 @@ class targetdeclination:
         # RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            tel_dev.TargetRightAscension = targetrightascension
+            tel_dev.TargetRightAscension = targetdeclination
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
@@ -1881,7 +1883,7 @@ class targetdeclination:
                                        DriverException(0x500, 'Telescope.Targetdeclination failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev))
+@before(PreProcessRequest(maxdev)) # NOTE : May have to limit limit to prevent mechanical interferences
 class targetrightascension:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
@@ -1892,7 +1894,7 @@ class targetrightascension:
 
         try:
             # ----------------------
-            val = tel_dev.TargetRightAscension
+            val: float = tel_dev.TargetRightAscension
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1905,7 +1907,7 @@ class targetrightascension:
                                          NotConnectedException()).json
             return
 
-        targetrightascensionstr = get_request_field(
+        targetrightascensionstr: str = get_request_field(
             'TargetRightAscension', req)      # Raises 400 bad request if missing
         try:
             targetrightascension = float(targetrightascensionstr)
@@ -1935,7 +1937,7 @@ class tracking:
 
         try:
             # ----------------------
-            val = tel_dev.Tracking
+            val: bool = tel_dev.Tracking
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1949,9 +1951,9 @@ class tracking:
             return
 
         # Raises 400 bad request if missing
-        trackingstr = get_request_field('Tracking', req)
+        trackingstr: str = get_request_field('Tracking', req)
         try:
-            tracking = to_bool(trackingstr)
+            tracking: bool = to_bool(trackingstr)
         except:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'Tracking {trackingstr} not a valid boolean.')).json
@@ -1978,7 +1980,7 @@ class trackingrate:
 
         try:
             # ----------------------
-            val = tel_dev.TrackingRate
+            val: float = tel_dev.TrackingRate
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -1992,9 +1994,14 @@ class trackingrate:
             return
 
         # Raises 400 bad request if missing
-        trackingratestr = get_request_field('TrackingRate', req)
+        trackingratestr: str = get_request_field('TrackingRate', req)
         try:
+            allowed_rates = [e.value for e in DriveRates]
             trackingrate = int(trackingratestr)
+            if trackingrate not in allowed_rates:
+                resp.text = MethodResponse(req,
+                                               InvalidValueException(f'TrackingRate {trackingratestr} is not a valid rate. Supported rates are: {allowed_rates}.')).json
+                return
         except:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'TrackingRate {trackingratestr} not a valid integer.')).json
@@ -2002,7 +2009,7 @@ class trackingrate:
         # RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            tel_dev.TrackingRate = trackingrate  # TODO: Implement tracking rate control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.TrackingRate = trackingrate  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement tracking rate control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.TrackingRate = trackingrate  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement tracking rate control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.TrackingRate = trackingrate  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement tracking rate control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.TrackingRate = trackingrate
+            tel_dev.TrackingRate = trackingrate
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
@@ -2013,7 +2020,7 @@ class trackingrate:
 @before(PreProcessRequest(maxdev))
 class trackingrates:
 
-    def on_get(self, req: Request, resp: Response, devnum: int):
+    def on_get(self, req: Request, resp: Response, devnum: int) -> None:
         if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
                                          NotConnectedException()).json
@@ -2021,7 +2028,7 @@ class trackingrates:
 
         try:
             # ----------------------
-            val = tel_dev.TrackingRates
+            val: list[DriveRates] = tel_dev.TrackingRates
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -2040,7 +2047,7 @@ class utcdate:
 
         try:
             # ----------------------
-            val = tel_dev.UTCDate
+            val: str = tel_dev.UTCDate
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -2054,11 +2061,10 @@ class utcdate:
             return
 
         # Raises 400 bad request if missing
-        utcdate = get_request_field('UTCDate', req)
+        utcdate: str = get_request_field('UTCDate', req)
         # INTEPRET AS NEEDED OR FAIL ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
-            # TODO: Implement setting UTC date. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev
             tel_dev.UTCDate = utcdate
             # -----------------------------
             resp.text = MethodResponse(req).json
@@ -2078,7 +2084,10 @@ class unpark:
 
         try:
             # -----------------------------
-            tel_dev.Unpark()  # TODO: Implement unparking. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Unpark()  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement unparking. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Unpark()  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement unparking. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Unpark()  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement unparking. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Unpark()  # Note: This is a placeholder, actual
+            if tel_dev.CanUnpark:
+                tel_dev.Unpark()  
+                resp.text = MethodResponse(req,
+                                               InvalidValueException('Unparking is not supported by this telescope.')).json
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
