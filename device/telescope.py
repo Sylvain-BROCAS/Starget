@@ -1691,6 +1691,9 @@ class slewtoaltaz:
                                          NotConnectedException()).json
             return
 
+        resp.text = MethodResponse(req, NotImplementedException()).json
+        return
+    
         # Raises 400 bad request if missing
         azimuthstr: str = get_request_field('Azimuth', req)
         try:
@@ -1728,7 +1731,9 @@ class slewtoaltazasync:
             resp.text = PropertyResponse(None, req,
                                          NotConnectedException()).json
             return
-
+        resp.text = MethodResponse(req, NotImplementedException()).json
+        return
+    
         # Raises 400 bad request if missing
         azimuthstr = get_request_field('Azimuth', req)
         try:
@@ -1840,7 +1845,9 @@ class slewtotarget:
             resp.text = PropertyResponse(None, req,
                                          NotConnectedException()).json
             return
-
+        resp.text = MethodResponse(req, NotImplementedException()).json
+        return
+    
         try:
             # -----------------------------
             tel_dev.SlewToTarget()
@@ -1859,7 +1866,8 @@ class slewtotargetasync:
             resp.text = PropertyResponse(None, req,
                                          NotConnectedException()).json
             return
-
+        resp.text = MethodResponse(req, NotImplementedException()).json
+        return
         try:
             # -----------------------------
             tel_dev.SlewToTargetAsync()
@@ -1870,7 +1878,7 @@ class slewtotargetasync:
                                        DriverException(0x500, 'Telescope.Slewtotargetasync failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev)) 
+@before(PreProcessRequest(maxdev)) # TODO : Not implemented yet
 class synctoaltaz:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -1879,6 +1887,9 @@ class synctoaltaz:
                                          NotConnectedException()).json
             return
 
+        resp.text = MethodResponse(req, NotImplementedException()).json
+        return
+    
         azimuthstr: str = get_request_field('Azimuth', req)
         # Raises 400 bad request if missing
         if azimuthstr is None or azimuthstr == '':
@@ -1985,7 +1996,7 @@ class synctocoordinates:
                                        DriverException(0x500, 'Telescope.Synctocoordinates failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev))
+@before(PreProcessRequest(maxdev)) # TODO : Not implemented yet
 class synctotarget:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -1993,7 +2004,9 @@ class synctotarget:
             resp.text = PropertyResponse(None, req,
                                          NotConnectedException()).json
             return
-
+        resp.text = MethodResponse(req, NotImplementedException()).json
+        return
+    
         try:
             # -----------------------------
             if tel_dev.CanSyncToTarget:

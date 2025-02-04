@@ -20,8 +20,8 @@ def get_UTC_date():
 def move_to_pos(motor, position):
     pass
 
-def is_RA_homed():
-    pass
+def is_RA_homed() -> bool:
+    return False
 
-def is_DEC_homed():
-    pass
+def is_DEC_homed() -> bool:
+    return True
