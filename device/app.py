@@ -75,7 +75,6 @@ from shr import set_shr_logger
 #########################
 # FOR EACH ASCOM DEVICE #
 #########################
-import rotator
 import telescope
 
 #--------------
@@ -116,8 +115,8 @@ class LoggingWSGIRequestHandler(WSGIRequestHandler):
 
         ##TODO## If I enable this, the server occasionally fails to respond
         ##TODO## on non-200s, per Wireshark. So crazy!
-        #if args[1] != '200':  # Log this only on non-200 responses
-        #    log.logger.info(f'{self.client_address[0]} <- {format%args}')
+        # if args[1] != '200':  # Log this only on non-200 responses
+        #     log.logger.info(f'{self.client_address[0]} <- {format%args}')
 
 #-----------------------
 # Magic routing function
@@ -210,7 +209,7 @@ def falcon_uncaught_exception_handler(req: Request, resp: Response, ex: BaseExce
     """
     exc = sys.exc_info()
     custom_excepthook(exc[0], exc[1], exc[2])
-    raise HTTPInternalServerError('Internal Server Error', 'Alpaca endpoint responder failed. See logfile.')
+    raise HTTPInternalServerError(title='Internal Server Error', description='Alpaca endpoint responder failed. See logfile.')
 
 # ===========
 # APP STARTUP
@@ -222,7 +221,6 @@ def main():
     # Share this logger throughout
     log.logger = logger
     exceptions.logger = logger
-    rotator.start_rot_device(logger)
     telescope.start_tel_device(logger)
     discovery.logger = logger
     set_shr_logger(logger)
@@ -230,7 +228,6 @@ def main():
     #########################
     # FOR EACH ASCOM DEVICE #
     #########################
-    rotator.logger = logger
     telescope.logger = logger
     # -----------------------------
     # Last-Chance Exception Handler
@@ -253,7 +250,6 @@ def main():
     #########################
     # FOR EACH ASCOM DEVICE #
     #########################
-    init_routes(falc_app, 'rotator', rotator)
     init_routes(falc_app, 'telescope', telescope)
     #
     # Initialize routes for Alpaca support endpoints
@@ -261,7 +257,7 @@ def main():
     falc_app.add_route(f'/management/v{API_VERSION}/description', management.description())
     falc_app.add_route(f'/management/v{API_VERSION}/configureddevices', management.configureddevices())
     falc_app.add_route('/setup', setup.svrsetup())
-    falc_app.add_route(f'/setup/v{API_VERSION}/rotator/{{devnum}}/setup', setup.devsetup())
+    falc_app.add_route(f'/setup/v{API_VERSION}/telescope/{{devnum}}/setup', setup.devsetup())
 
     #
     # Install the unhandled exception processor. See above,

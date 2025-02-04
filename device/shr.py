@@ -83,8 +83,8 @@ def set_shr_logger(lgr):
 # Static metadata not subject to configuration changes
 class DeviceMetadata:
     """ Metadata describing the Alpaca Device/Server """
-    Version = '0.2'
-    Description = 'Alpaca Mount'
+    Version = '0.0'
+    Description = 'Starget Mount'
     Manufacturer = 'Sylvain BROCAS'
 
 # --------------------------------
@@ -122,7 +122,7 @@ def get_request_field(name: str, req: Request, caseless: bool = False, default: 
     if req.method == 'GET':
         for param in req.params.items():        # [name,value] tuples
             if param[0].lower() == lcName:
-                return str(param[1]) #! initial line : return param[1]
+                return str(param[1])
         if default == None:
             raise HTTPBadRequest(title=_bad_title, description=bad_desc)                # Missing or incorrect casing
         return default                          # not in args, return default

@@ -31,16 +31,9 @@ class GuideDirections(IntEnum):    # Shared by Camera
 class PierSide(IntEnum):
     pierEast        = 0
     pierWest        = 1
-    pierUnknown     = -1
+    pierUnknown     = -1 # Or 2 (documentation and templates divergence)
 
 class TelescopeAxes(IntEnum):
     axisPrimary     = 0
     axisSecondary   = 1
     axisTertiary    = 2
-
-class AxisRates(IntEnum):
-    axisRateVerySlow    = 0
-    axisRateSlow    = 1
-    axisRateMedium = 2
-    axisRateFast    = 3
-    axisRateVeryFast = 4

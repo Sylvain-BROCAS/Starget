@@ -2,25 +2,16 @@ import serial
 import time
 
 class MKSMotorController:
-    def __init__(self, adress, port, baudrate=115200):
+    def __init__(self, ):
         """
         Initialise le contrôleur du moteur
         :param port: Port UART (ex: '/dev/ttyUSB0' sur Linux)
         :param baudrate: Vitesse de communication (défaut: 115200)
         """
-        self.serial = serial.Serial(port, baudrate, timeout=1)
-        self.current_position = 0  # Position en degrés
-        self.steps_per_degree = 200  # Dépend du microstepping configuré
-        self.reduction_ratio = 100  # Ratio du réducteur
-        
-    def _send_command(self, command):
-        """Envoie une commande UART au driver"""
-        try:
-            self.serial.write(command.encode())
-            return True
-        except Exception as e:
-            print(f"Erreur d'envoi de commande: {e}")
-            return False
+        # self.serial = serial.Serial(port, baudrate, timeout=1)
+        # self.current_position = 0  # Position en degrés
+        # self.steps_per_degree = 200  # Dépend du microstepping configuré
+        # self.reduction_ratio = 100  # Ratio du réducteur
 
     def move_to_position(self, target_position_degrees):
         pass
@@ -30,7 +21,7 @@ class MKSMotorController:
         Déplace le moteur d'un angle spécifique
         :param angle_degrees: Angle de déplacement en degrés
         """
-        return self.move_to_position(self.current_position + angle_degrees)
+        pass
 
     def return_to_zero(self):
         """Retourne le moteur à la position 0"""
@@ -45,4 +36,12 @@ class MKSMotorController:
     
     def is_moving(self):
         """Vérifie si le moteur est en mouvement"""
+        pass
+
+    def move_constant_speed(self, speed_steps_per_second, distance_steps):
+        """
+        Déplace le moteur à une vitesse constante
+        :param speed_steps_per_second: Vitesse en steps/second
+        :param distance_steps: Distance en steps
+        """
         pass

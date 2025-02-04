@@ -43,8 +43,8 @@ import time
 from config import Config
 
 global logger
-#logger: logging.Logger = None  # Master copy (root) of the logger
-logger = None                   # Safe on Python 3.7 but no intellisense in VSCode etc.
+logger: logging.Logger  # Master copy (root) of the logger
+#logger  = None                   # Safe on Python 3.7 but no intellisense in VSCode etc.
 
 def init_logging():
     """ Create the logger - called at app startup

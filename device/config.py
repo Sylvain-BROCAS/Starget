@@ -71,6 +71,14 @@ def get_toml(sect: str, item: str):
             setting = ''
     return setting
 
+_bools = ['true', 'false']                               # Only valid JSON bools allowed
+def to_bool(str: str) -> bool:
+    val = str.lower()
+    if val not in _bools:
+        return bool(val)
+    else:
+        return val == _bools[0]
+
 class Config:
     """Device configuration. For docker based installation specific
         configuration, will first look for ``/alpyca/config.toml``
@@ -81,23 +89,57 @@ class Config:
     # Network Section
     # ---------------
     ip_address: str = get_toml('network', 'ip_address')
-    port: int = get_toml('network', 'port')
+    port: int = int(get_toml('network', 'port'))
     # --------------
     # Server Section
     # --------------
     location: str = get_toml('server', 'location')
-    verbose_driver_exceptions: bool = get_toml('server', 'verbose_driver_exceptions')
+    verbose_driver_exceptions: bool = to_bool(get_toml('server', 'verbose_driver_exceptions'))
     # --------------
     # Device Section
     # --------------
-    can_reverse: bool = get_toml('device', 'can_reverse')
-    step_size: float = get_toml('device', 'step_size')
-    steps_per_sec: int = get_toml('device', 'steps_per_sec')
-    sync_write_connected: bool = get_toml('device', 'sync_write_connected')
+    step_size: float = float(get_toml('device', 'step_size'))
+    steps_per_sec: float = float(get_toml('device', 'steps_per_sec'))
+    sync_write_connected: bool = to_bool(get_toml('device', 'sync_write_connected'))
+    alignment_mode: int = int(get_toml('device', 'alignment_mode'))
+    aperture_area: float = float(get_toml('device', 'aperture_area'))
+    aperture_diameter: float = float(get_toml('device', 'aperture_diameter'))
+    focal_length: float = float(get_toml('device', 'focal_length'))
+    equatorial_system: int = int(get_toml('device', 'equatorial_system'))
+    slew_settle_time: float = int(get_toml('device', 'slew_settle_time'))
+    tracking_rates: list = list(get_toml('device', 'tracking_rates'))
+    axis_rates: list = list(get_toml('device', 'axis_rates'))
+    site_elevation: float = float(get_toml('device', 'site_elevation'))
+    site_latitude: float = float(get_toml('device', 'site_latitude'))
+    site_longitude: float = float(get_toml('device', 'site_longitude'))
+    does_refraction: bool = to_bool(get_toml('device', 'does_refraction'))
+    can_find_home: bool = to_bool(get_toml('device', 'can_find_home'))
+    can_park: bool = to_bool(get_toml('device', 'can_park'))
+    can_unpark: bool = to_bool(get_toml('device', 'can_unpark'))
+    can_set_park: bool = to_bool(get_toml('device', 'can_set_park'))
+    park_pos: list = list(get_toml('device', 'park_pos'))
+    can_set_DEC: bool = to_bool(get_toml('device', 'can_set_DEC'))
+    can_set_RA: bool = to_bool(get_toml('device', 'can_set_RA'))
+    can_set_DEC_rate: bool = to_bool(get_toml('device', 'can_set_DEC_rate'))
+    can_set_RA_rate: bool = to_bool(get_toml('device', 'can_set_RA_rate'))
+    can_move_axis: bool = to_bool(get_toml('device', 'can_move_axis'))
+    can_slew: bool = to_bool(get_toml('device', 'can_slew'))
+    can_slew_async: bool = to_bool(get_toml('device', 'can_slew_async'))
+    can_slew_AltAz: bool = to_bool(get_toml('device', 'can_slew_AltAz'))
+    can_slew_AltAz_async: bool = to_bool(get_toml('device', 'can_slew_AltAz_async'))
+    can_set_tracking: bool = to_bool(get_toml('device', 'can_set_tracking'))
+    can_set_sidereal_rate: bool = to_bool(get_toml('device', 'can_set_sidere)al_rate'))
+    can_pulse_guide: bool = to_bool(get_toml('device', 'can_pulse_guide'))
+    can_set_guide_rates: bool = to_bool(get_toml('device', 'can_set_guide_rates'))
+    can_sync: bool = to_bool(get_toml('device', 'can_sync'))
+    can_sync_AltAz: bool = to_bool(get_toml('device', 'can_sync_AltAz'))
+    can_sync_to_target: bool = to_bool(get_toml('device', 'can_sync_to_target'))
+    can_set_pier_side: bool = to_bool(get_toml('device', 'can_set_pier_side'))
+    
     # ---------------
     # Logging Section
     # ---------------
     log_level: int = logging.getLevelName(get_toml('logging', 'log_level'))  # Not documented but works (!!!!)
     log_to_stdout: str = get_toml('logging', 'log_to_stdout')
-    max_size_mb: int = get_toml('logging', 'max_size_mb')
-    num_keep_logs: int = get_toml('logging', 'num_keep_logs')
+    max_size_mb: int = int(get_toml('logging', 'max_size_mb'))
+    num_keep_logs: int = int(get_toml('logging', 'num_keep_logs'))
