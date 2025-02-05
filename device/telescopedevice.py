@@ -94,8 +94,8 @@ class TelescopeDevice:
         self._local_sidereal_time: float = 0.0
 
         # ----------------------------------- Setup ---------------------------------- #
-        self._RA_motor = MKSMotor(is_RA_homed, "")
-        self._DEC_motor = MKSMotor(is_DEC_homed, "")
+        self._RA_motor = MKSMotor(is_RA_homed, "e0")
+        self._DEC_motor = MKSMotor(is_DEC_homed, "e1")
 
     # ---------------------------------------------------------------------------- #
     #                                  Properties                                  #
@@ -681,8 +681,8 @@ class TelescopeDevice:
         self.logger.info("Parking telescope...")
         self._RA_motor.speed = 1000
         self._DEC_motor.speed = 1000
-        tasks = [self._RA_motor.move_to_zero_position,
-            self._DEC_motor.move_to_zero_position
+        tasks = [self._RA_motor.return_to_zero,
+            self._DEC_motor.return_to_zero
         ]
         await asyncio.gather(*tasks)
         self._at_park = True
