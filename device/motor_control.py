@@ -256,16 +256,18 @@ class MKSMotor:
             >>> Return e0 01 e1 (successful)"""
         match dir:
             case 'CW':
-                dir_byte = 0
+                dir_byte = 0b0
             case 'CCW':
-                dir_byte = 1
+                dir_byte = 0b1
         match self.motor_type:
             case 1.8:
                 speed:int = int((speed_rpm * 200 * self.Mstep) / (30000))
             case 0.9:
                 speed:int = int((speed_rpm * 400 * self.Mstep) / (30000))
+        speed_byte = bytes(speed)
+        param = (dir_byte << 7) | int.from_bytes(speed_byte, 'big')
 
-        command: list[int] = [0x98, dir_byte, speed]
+        command: list[int] = [0xf6, param]
         return self._send_command(command)
 
     def move_to_target(self, target_position, speed_rpm): # TODO
