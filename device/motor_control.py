@@ -290,6 +290,19 @@ class MKSMotor:
         command: list[int] = [0xA6, 0x05, target_position, speed_rpm]
         return self._send_command(command)
 
+    def move_by_angle(self, angle, speed_rpm):
+        current_position = self.read_shaft_angle()
+        target_position = current_position + angle
+        return self.move_to_target(target_position, speed_rpm)
+
+    def find_home(self):
+        """Find the home position. Command is of the form <adress> 9a <tCHK>.
+        """
+        self.move_by_angle(360, 10)
+        while not self.check_home():
+            pass
+        self.stop()
+        
 # Exemple d'utilisation
 if __name__ == "__main__":
     pass

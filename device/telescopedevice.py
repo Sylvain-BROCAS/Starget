@@ -10,6 +10,7 @@ from config import Config
 from datetime import datetime
 import asyncio
 from typing import Coroutine, Any
+from astropy.time import Time as astropyTime
 
 class TelescopeDevice:
     def __init__(self, logger:Logger):
@@ -57,8 +58,6 @@ class TelescopeDevice:
         self._can_sync_to_target: bool = Config.can_sync_to_target
         self._can_park: bool = Config.can_park
         self._can_unpark: bool = Config.can_unpark
-        self._can_move_ra: bool = True
-        self._can_move_dec: bool = True
 
         self._conn_time_sec: float = 5   # Async connect delay
 
@@ -412,20 +411,6 @@ class TelescopeDevice:
         res: bool = self._can_sync_to_target
         self._lock.release()
         return res
-    
-    @property
-    def CanMoveDec(self) -> bool:
-        self._lock.acquire()
-        res: bool = self._can_move_dec
-        self._lock.release()
-        return res
-    
-    @property
-    def CanMoveRa(self) -> bool:
-        self._lock.acquire()
-        res: bool = self._can_move_ra
-        self._lock.release()
-        return res
     # ----------------------------- Telescope status ----------------------------- #
     @property
     def Altitude(self) -> float: # TODO: Convert to actual altitude
@@ -701,11 +686,14 @@ class TelescopeDevice:
 
     async def Park(self) -> None:
         self.logger.info("Parking telescope...")
+        self._RA_motor.stop()
+        self._DEC_motor.stop()
+
         self._is_moving = True
-        tasks = [self._RA_motor.return_to_zero,
-            self._DEC_motor.return_to_zero
-        ]
-        await asyncio.gather(*tasks)
+        self._RA_motor.return_to_zero()
+        self._DEC_motor.return_to_zero()
+
+        while 
         self._is_moving = False
         self._at_park = True
         self.logger.info("Telescope parked.")
@@ -726,7 +714,7 @@ class TelescopeDevice:
     async def _find_home_dec(self):
         await asyncio.to_thread(self._DEC_motor.find_home)
 
-    async def AbortSlew(self):
+    def AbortSlew(self):
         self.logger.info("Aborting slew...")
         self._RA_motor.stop()
         self._DEC_motor.stop()
@@ -776,20 +764,36 @@ class TelescopeDevice:
         else:
             return PierSide.pierWest
 
-    # -------------------------- Guiding relatedmethods -------------------------- #
+    # -------------------------- Guiding related methods -------------------------- #
     def PulseGuide(self, Direction, Duration):# TODO : Not implemented yet
         # Implementation here
         pass
 
     # ---------------------- Telescope parameters related methods --------------------- #
-
-    # ---------------------- Telescope state related method ---------------------- #
-    def Unpark(self) -> None:
+    def CanMoveAxis(self, Axis:int) -> bool:# NOTE : Can always move each axis
         """
-        Unparks the mount.
+        Indicates whether the telescope can move the requested axis.
+
+        Args:
+            Axis (TelescopeAxes): The axis to check for movement capability.
+
+        Returns:
+            bool: True if the axis can be moved, False otherwise.
+        """
+        axis = TelescopeAxes(Axis)
+
+        # Implement logic to check if axis can be moved
+        return True
+
+    # ---------------------- Telescope state related method ----------------------- #
+
+    def Unpark(self) -> None:
+        """Unparks the mount.
 
         This method takes the telescope out of the parked state, allowing it to be slewed.
         """
+        self._RA_motor.stop()
+        self._DEC_motor.stop()
         self._parked = False
 
 
@@ -806,7 +810,7 @@ class TelescopeDevice:
         self._RA:float = RightAscension
         self._DEC:float = Declination
 
-    def SyncToAltAz(self, Altitude: float, Azimuth: float) -> None:
+    def SyncToAltAz(self, Altitude: float, Azimuth: float) -> None:# TODO : change time source
         """
         Syncs the telescope to the specified altitude and azimuth coordinates.
         
@@ -816,11 +820,9 @@ class TelescopeDevice:
             Altitude (float): The altitude coordinate to sync to, in degrees.
             Azimuth (float): The azimuth coordinate to sync to, in degrees.
         """
-        self._RA, self._DEC = convert_altaz_to_eq(alt=Altitude,
-                                                  az=Azimuth,
-                                                  longitude=self._site_longitude,
-                                                  latitude=self._site_latitude, 
-                                                  elevation=self._site_elevation)
+        RA, DEC = convert_altaz_to_eq(Altitude, Azimuth, self._site_latitude, self._site_longitude, self._site_elevation, Time.now())
+        self._RA = RA
+        self._DEC = DEC
 
     def SyncToTarget(self) -> None:
         """
