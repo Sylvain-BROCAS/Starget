@@ -171,6 +171,9 @@ Utiliser ce driver assez évoluer me permet de m'éliminer beaucoup de travail d
 
 > Je tiens à mettre en avant l'[initiative suivante](https://creapunk.com/) : C'est un gars qui développe tout seul son propre driver pour un coût de revient très faible tout en préservant beaucoup d'options intéressantes et de bonnes performances. Le projet est en cours, il a déjà sorti plusieurs versions de son pcb et son software, mais par exemple, l'API de contrôle par port série n'est pas encore implémentée, ainsi que d'autres options de base. Si vous êtes compétents dans le domaine ou tout simplement curieux, essayez de contribuer à son projet, ou simplement lui faire un petit coucou sur son serveur [Discord](https://discord.com/invite/D4EkKaf5vV)
 
+Pour conclure cette section, j'ai choisis le [moteur suivant](https://www.laskakit.cz/user/related_files/73231_1624__ps_1199sm-17hs4023-etc.pdf) pour les deux axes de la monture : 
+![Moteur pas à pas "low profile" - 17HS4023](17hs4023_stepper.png)
+
 ### 3.2 : L'unité centrale
 Pour traiter les instruction, activer les moteurs et lire les capteurs, il nous faut un cerveau, une unité de calcul. Pour sa puissance raisonnable, sa faible consommation et très faible encombrement, j'avais démarré ce projet avec un devkit ESP32 programmé en micropython. Cela permettait d'allier ma connaissance en python, la facilité de développement en conservant un support physique minimal. J'avais réussi à écrire un driver capable de se connecter à NINA (rappelez-vous, c'est le logiciel de contrôle) sur la base de [ce projet](https://github.com/RunTJoe/MiPyAlpaca). Mais je suis finalement tombé sur les templates d'ASCOM, disponibles en python, mais pas en version micropython. Certaines idées de futures implémentations auquelles je pense pour un stade bien plus avancé du projet m'ont poussé à me tourner finalement vers un Raspberry Pi. J'ai chosisis le modèle qui semble le plus adapté à mes besoins et mes contraintes : Le [Raspberi Pi Zero 2 W](https://datasheets.raspberrypi.com/rpizero2/raspberry-pi-zero-2-w-product-brief.pdf)
 
@@ -187,10 +190,39 @@ Prenons le pire des cas : un objectif de 200mm sur un Reflex. Je prends exemple 
 
 Pour estimer mon besoin de precision sur le suivi, voici mon raisonnement :
 - Résolution moteur : 1.8°/step ou 0.9°/step (J'ai acheté des 1.8°/step)
-- Facteur de microstepping : 0 à 256 
+- Facteur de [microstepping](https://www.linearmotiontips.com/microstepping-basics/) : 0 à 256 
 - Focale : 200 mm ==> Focale effective : 320 mm (Prise en compte du [facteur de crop](https://neelnajaproduction.com/ce-quil-faut-savoir-sur-les-capteurs-et-crops-factors/))
 - Taille pixel : 5.71 μm
 
 [Echantillonnage](https://www.univers-astro.fr/fr/content/6-le-calcul-d-echantillonnage) :  \( e = 206 \times \frac{5.71\ \mu m}{320\ mm} = 3.68"\text{/px} \)
 
-Un pixel couvre donc 3.68" d'arc dans cette configuration.
+Un pixel couvre donc 3.68" d'arc dans cette configuration. Je veux que l'angle correspondant à un pas soit plus faible que cette valeur pour pouvoir suivre finement le ciel sans décalage entre les images. Si l'on se base sur le critère de Shannon, on devrait avoir un pas au moins deux fois plus fin que la résolution d'un pixel.
+
+D'après mes recherches, il ressort que le facteur de microstepping maximum utilisable en pratique pour ce genre d'application est de 32. 
+
+>Le microstepping est une technique de commande d'un moteur pas à pas qui permet de multiplier virtuellement le nombre de pas d'un moteur et donc améliorer sa résolution angulaire. Un facteur de 32 signifie qu'on multiplie le nombre de positions possibles par 32, et qu'on divise par autant sans résolution angulaire. Utiliser le plus gros facteur possible permet de réduire le coefficient de réduction du réducteur qui serait éventuellement nécessaire, et donc de simplifier sa conception.
+
+Pour le moteur que j'ai sélectionné :
+```mermaid
+flowchart LR
+    A["Pas Moteur
+    1 pas = 1.8°"] --> B["Micro-pas
+    1 μpas = 1.8° ÷ 32
+    = 0.05625°
+    = 202.5''"] --> C["Réducteur
+    Ratio ~1/120
+    1 μpas ≈ 1.69''"]
+
+    style A fill:#ffecb3,stroke:#ffa000,color:#000000
+    style B fill:#b3e5fc,stroke:#0288d1,color:#000000
+    style C fill:#c8e6c9,stroke:#388e3c,color:#000000
+```
+On remarque qu'un rapport de réduction de 120 devrait suffire pour atteindre la performance que je vise.
+
+> Une question qui se posera notamment lorsque j'aborderai plus en profondeur la partie mécanique de la monture concerne le backlash, c'est à dire le jeu dans la transmission de puissance. En effet, un jeu est nécessaire pour permettre l'engrènement entre les différentes parties du réducteur, mais un jeu pourrait potentiellement facilement atteindre la minute d'Arc voire le degré (rappelons que je prévois d'utiliser des moyens de production accessible en Fablab : impression 3D, découpeuse Laser, ...). À ce moment, l'erreur induite dépasserait largement cette valeur de quelques secondes et rendrait peut être superflu ce gros rapport de réduction. **Ce sera une partie importante de mon étude des performances mécaniques de ce projet**.
+
+Le ratio calculé a une valeur très élevée, 120. Même les réducteurs de type harmonic drive qui sont réputés pour permettre de gros ratios d'entraînement montent difficilement aussi haut. Je pourrais très bien assembler plusieurs étages de réducteurs, mais c'est très encombrant. 
+D'après mes recherches, deux solutions s'offrent à moi :
+    - **Solution roue/vis sans fin:** C'est une solution classique sur les petites montures...comme la Star Adventurer. Un tel réducteur s'achète pour une trentaine d'euros sur amazone (roue dentée et vis sans fin, sans roulements).
+    - **Solution basée sur un Split Ring Compound Planetary Gear:** Ce genre de réducteur est assez peu connu, bien qu.il ait visiblement été utilisé régulièrement en automobile, pour des modèles de formula Student, ...
+
