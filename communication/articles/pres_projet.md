@@ -137,4 +137,58 @@ Maintenant qu'on a choisis l'architecture de Starget ainsi que le protocole de c
 La suite de cet article porte sur la présentation des choix technologiques actuels et leur justification.
 
 ### 3.1 : La motorisation
+On l'a dit plus haut... pour bouger, la monture a besoin de moteurs. On va s'intéresser ici au choix de ce composant.
 
+Première question à se poser : Qu'est-ce qui existe comme type de moteur (abordables étant donné mes contraintes) ? Deuxième question : Qu'Est-ce qui se fait sur les autres montures ?
+Au niveau des moteurs, 3 technologies ressortent particulièrement :
+
+| Caractéristique / Characteristic | Moteur à Broches / Brushed Motor | Moteur Sans Broches / Brushless Motor | Moteur Pas à Pas / Stepper Motor |
+| --- | --- | --- | --- |
+| Avantages | • Coût réduit<br>• Contrôle simple<br>• Relation linéaire couple-vitesse | • Plus efficace<br>• Durée de vie plus longue<br>• Moins d'interférences électromagnétiques | • Positionnement précis<br>• Maintien de charge<br>• Fiabilité élevée |
+| Inconvénients | • Usure des balais<br>• Interférences électromagnétiques<br>• Entretien régulier requis | • Coût initial plus élevé<br>• Système de contrôle complexe | • Moins efficace en continu<br>• Torque diminué à haute vitesse |
+| Applications typiques | • Équipements automobiles<br>• Appareils électroménagers<br>• Jouets | • Véhicules électriques<br>• Machines industrielles<br>• Produits de consommation | • Machines CNC<br>• Imprimantes 3D<br>• Robots industriels |
+| Caractéristiques techniques| • Relation linéaire couple-vitesse<br>• Facilement contrôlable<br>• Simple à mettre en œuvre | • Haute efficacité énergétique<br>• Faible friction interne<br>• Longue durée de vie | • Pas précis et répétable<br>• Positionnement exact<br>• Couple élevé à basse vitesse |
+
+La grande différence entre les moteurs brushed/brushless et les pas à pas réside principalement dans leur mode de commande. Les premiers se commandent en vitesse : en fonction de la tension "lue" à leur borne, un couple provoque la rotation du rotor qui se stabilise à une certaine vitesse. Dans le cas du moteur pas à pas, le rotor est composé d'aimants et le stator de bobines. Si une bobine est activée, le rotor va se placer en face des pôles attractifs. En alimentant astucieusement les bobines, on peut faire tourner le champs magnétique et le moteur va le suivre. Les fameux *pas* du moteur sont toutes ces positions d'équilibre en face des bobines.
+Cette grande différence entre les technos a une grande conséquence : Les moteurs brushed/brushless se commandent naturellement en vitesse alors qu'un moteur pas à pas permet de se commander en position.
+
+Reprenons un peu de recul sur notre projet, et demandons nous quels mouvements devra réaliser Starget. On peut distinguer deux mouvements principaux :
+- **Le Tracking :** La monture doit suivre la rotation de la Terre. Ce suivi est réalisé par la rotation en continu d'un axe *(Axe d'Ascension Droite)* à une vitesse de 15°/h environ. Il faut qu'il soit le plus lisse et continu possible pour assurer un bon suivi de l'objet
+- **Le Slew :** C'est un grand mouvement (plusieurs degrés d'amplitude), à plus grande vitesse qui permet de pointer une direction, placer la monture dans sa position de *parking*, ...
+
+> On notera que pour un Slew, la position d'arrivée est très importante (quelques degrés de différence peut faire manquer une cible)
+
+On se rend compte que le paramètre le plus important dans ces mouvements est la précision de positionnement et le contrôle sur la vitesse sur les faibles vitesses. Pour cette application, le moteur pas à pas est tout indiqué ... et utilisé sur un grand nombre de montures
+
+> Après quelques recherches sur le sujet, on se rend compte qu'il est tout à fait possible, avec un circuit de contrôle en boucle fermée de piloter un moteur brushless en position avec une bonne précision. Le dispositif est un peu plus cher, même pour les solutions Open Sources déjà existantes. Mais un tel moteur pourrait laisser envisager un gain de poids et de place certain, ainsi qu'une diminution des vibrations par rapport à un moteur pas à pas. Cela viendra peut être dans une version future de Starget.
+
+Conclusion, Starget sera dotée de moteurs pas à pas dans sa premnière version. Après réflexion, j'ai décidé d'opter pour ce [driver](https://github.com/makerbase-mks/MKS-SERVO42C) en boucle fermée. il offre plusieurs options intéressantes :
+- Commandes en UART : On envoie des commandes par liaison série, le driver se charge de l'exécution de son côté, sans bloquer le reste du programme de la monture
+- La plateforme est bien documentée
+- La carte prends très peu de place et est très légère...tout ce que je recherche
+
+Utiliser ce driver assez évoluer me permet de m'éliminer beaucoup de travail du côté motorisation, ce qui est une bonne chose.
+
+> Je tiens à mettre en avant l'[initiative suivante](https://creapunk.com/) : C'est un gars qui développe tout seul son propre driver pour un coût de revient très faible tout en préservant beaucoup d'options intéressantes et de bonnes performances. Le projet est en cours, il a déjà sorti plusieurs versions de son pcb et son software, mais par exemple, l'API de contrôle par port série n'est pas encore implémentée, ainsi que d'autres options de base. Si vous êtes compétents dans le domaine ou tout simplement curieux, essayez de contribuer à son projet, ou simplement lui faire un petit coucou sur son serveur [Discord](https://discord.com/invite/D4EkKaf5vV)
+
+### 3.2 : L'unité centrale
+Pour traiter les instruction, activer les moteurs et lire les capteurs, il nous faut un cerveau, une unité de calcul. Pour sa puissance raisonnable, sa faible consommation et très faible encombrement, j'avais démarré ce projet avec un devkit ESP32 programmé en micropython. Cela permettait d'allier ma connaissance en python, la facilité de développement en conservant un support physique minimal. J'avais réussi à écrire un driver capable de se connecter à NINA (rappelez-vous, c'est le logiciel de contrôle) sur la base de [ce projet](https://github.com/RunTJoe/MiPyAlpaca). Mais je suis finalement tombé sur les templates d'ASCOM, disponibles en python, mais pas en version micropython. Certaines idées de futures implémentations auquelles je pense pour un stade bien plus avancé du projet m'ont poussé à me tourner finalement vers un Raspberry Pi. J'ai chosisis le modèle qui semble le plus adapté à mes besoins et mes contraintes : Le [Raspberi Pi Zero 2 W](https://datasheets.raspberrypi.com/rpizero2/raspberry-pi-zero-2-w-product-brief.pdf)
+
+Cette carte sera programmée en python. On peut y adjoindre des modules pour capter le signal GPS, des modules RTC pour garder l'heure en mémoire même hors tension, qui permettraient d'ajouter des fonctions pratiques pour Starget. La carte dispose également d'un port de communication UART qui permettra de contrôler entre autres choses les moteurs. Il y a également suffisamment d'entrées/sorties pour y brancher les capteurs qui équiperont la monture.
+
+### 3.3 : La mécanique
+Globalement, hormis un premier [modèle](https://cad.onshape.com/documents/c2a5d542c837fbf3e9a01f71/w/1fb0c1fdcb5c093b99c6adb8/e/1e525a6464b6294251420b4a) issu de ma phase d'exploration, la mécanique n'est pa très avancée. J'ai pu, au cours de cette première phase déterminer que je devrais pouvoir faire tenir le corps de la monture dans un pavé de 10x10x15 cm, ce qui est une bonne base.
+
+Au cours de cette phase, je me suis rendu compte que j'aurai surement besoin d'un réducteur à placer en sortie des moteurs afin d'améliorer leur résolution angulaire, et augmenter le couple. 
+
+Voici le détail de mes calculs. Si vous avez des suggestions, des remarques à apporter vis-à-vis de cette section, je vous invite envore une fois à m'en faire part, que ce soit sur discord d'Eos, linkedIn,...
+
+Prenons le pire des cas : un objectif de 200mm sur un Reflex. Je prends exemple sur mon Canon 40D qui possède un capteur avec des pixels assez gros de 5.71 μm de côté et qui est assez lourd en comparaison des APN modernes. L'ensemble pèse de 1.5 à 2.5kg. Prenons 3.5 kg de charge utile pour être large.
+
+Pour estimer mon besoin de precision sur le suivi, voici mon raisonnement :
+- Résolution moteur : 1.8°/step ou 0.9°/step (J'ai acheté des 1.8°/step)
+- Facteur de microstepping : 0 à 256 
+- Focale : 200 mm ==> Focale effective : 320 mm (Prise en compte du [facteur de crop](https://neelnajaproduction.com/ce-quil-faut-savoir-sur-les-capteurs-et-crops-factors/))
+- Taille pixel : 5.71 μm
+
+[Echantillonnage](https://www.univers-astro.fr/fr/content/6-le-calcul-d-echantillonnage) : \(e = 206 * \frac{5.71μm}{320mm} = 3.68"/px\)
