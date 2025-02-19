@@ -686,14 +686,11 @@ class TelescopeDevice:
 
     async def Park(self) -> None:
         self.logger.info("Parking telescope...")
-        self._RA_motor.stop()
-        self._DEC_motor.stop()
-
         self._is_moving = True
-        self._RA_motor.return_to_zero()
-        self._DEC_motor.return_to_zero()
-
-        while 
+        tasks = [self._RA_motor.return_to_zero,
+            self._DEC_motor.return_to_zero
+        ]
+        await asyncio.gather(*tasks)
         self._is_moving = False
         self._at_park = True
         self.logger.info("Telescope parked.")
@@ -764,7 +761,7 @@ class TelescopeDevice:
         else:
             return PierSide.pierWest
 
-    # -------------------------- Guiding related methods -------------------------- #
+    # -------------------------- Guiding relatedmethods -------------------------- #
     def PulseGuide(self, Direction, Duration):# TODO : Not implemented yet
         # Implementation here
         pass
@@ -785,15 +782,13 @@ class TelescopeDevice:
         # Implement logic to check if axis can be moved
         return True
 
-    # ---------------------- Telescope state related method ----------------------- #
-
+    # ---------------------- Telescope state related method ---------------------- #
     def Unpark(self) -> None:
-        """Unparks the mount.
+        """
+        Unparks the mount.
 
         This method takes the telescope out of the parked state, allowing it to be slewed.
         """
-        self._RA_motor.stop()
-        self._DEC_motor.stop()
         self._parked = False
 
 

@@ -216,7 +216,6 @@ def falcon_uncaught_exception_handler(req: Request, resp: Response, ex: BaseExce
 # ===========
 def main():
     """ Application startup"""
-
     logger = log.init_logging()
     # Share this logger throughout
     log.logger = logger
@@ -232,7 +231,7 @@ def main():
     # -----------------------------
     # Last-Chance Exception Handler
     # -----------------------------
-    sys.excepthook = custom_excepthook
+    sys.__excepthook__ = custom_excepthook
 
     # ---------
     # DISCOVERY
