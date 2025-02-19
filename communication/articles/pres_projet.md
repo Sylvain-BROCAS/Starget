@@ -191,4 +191,6 @@ Pour estimer mon besoin de precision sur le suivi, voici mon raisonnement :
 - Focale : 200 mm ==> Focale effective : 320 mm (Prise en compte du [facteur de crop](https://neelnajaproduction.com/ce-quil-faut-savoir-sur-les-capteurs-et-crops-factors/))
 - Taille pixel : 5.71 μm
 
-[Echantillonnage](https://www.univers-astro.fr/fr/content/6-le-calcul-d-echantillonnage) : \(e = 206 * \frac{5.71μm}{320mm} = 3.68"/px\)
+[Echantillonnage](https://www.univers-astro.fr/fr/content/6-le-calcul-d-echantillonnage) :  \( e = 206 \times \frac{5.71\ \mu m}{320\ mm} = 3.68"\text{/px} \)
+
+Un pixel couvre donc 3.68" d'arc dans cette configuration.
