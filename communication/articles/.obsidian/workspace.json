@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "47c34ea37fde559b",
+        "id": "9d269c99127e99a5",
         "type": "tabs",
         "children": [
           {
-            "id": "a028b7740abc9973",
+            "id": "d5f2e9e06c8712f3",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -168,8 +168,9 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "a028b7740abc9973",
+  "active": "d5f2e9e06c8712f3",
   "lastOpenFiles": [
+    "video_SRCPG_proto_starget-ezgif.com-video-to-gif-converter.gif",
     "pres_projet.md",
     "video_SRCPG_proto_starget.mp4",
     "SRCPG_starget.png",
