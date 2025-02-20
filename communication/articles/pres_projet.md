@@ -251,11 +251,11 @@ Pour le coup, la solution à base de vis sans fin semble s'imposer d'elle même 
 Mais encore une fois, je vois dans ce projet l'occasion de tester des choses, de comprendre comment ça marche ( la grande différence entre les deux solutions tient aussi dans mon niveau de compréhension du mécanisme ^^). Or, si il existe des articles scientifiques traitant principalement de design optimal de SRCPG (oui j'abrège, c'est long à écrire) ainsi que des modes propres du système, je n'ai pas trouvé beaucoup de ressources pour le rendre accessible au niveau bidouilleur. On trouve bien quelques vidéos et articles de blog très intéressants, en particulier [cette vidéo](https://www.youtube.com/watch?v=-VtbSvVxaFA) ainsi que le [repo Github](https://github.com/IdeaPropulsionSystems/CoolEpicyclicGearing) qui va avec, notamment parce qu'elle fait partie des ressources qui explique le mieux à la fois le mécanisme et les équations qui le régissent. Ensuite, il y a quelques posts Hackaday comme [celui-ci](https://hackaday.io/project/164732-mprt-modified-planetary-robotics-transmission) ou [celui-là](https://hackaday.io/project/196907-rr1-real-robot-one-revision-2/log/233687-1x-how-to-calculate-the-reduction-ratio-of-split-ring-planetary-gearbox) qui ont retenus mon attention.
 
 
-![[video_SRCPG_proto_starget-ezgif.com-video-to-gif-converter.gif]]
+![video_SRCPG_proto_starget-ezgif.com-video-to-gif-converter.gif](video_SRCPG_proto_starget-ezgif.com-video-to-gif-converter.gif)
 *Voici une vidéo du premier prototype de SRCPG que j'ai imprimé au début du projet pour tester le concept*
 
 
-![[SRCPG_starget.png]]
+![SRCPG_starget.png](SRCPG_starget.png)
 *Et voici sa modélisation CAO au cours de son élaboration*
 
 
