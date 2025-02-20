@@ -1,82 +1,57 @@
 # Starget : Conception d'une monture astronomique
-Ayant découvert l'astronomie, en tant qu'étudiant il y a quelques années, j'ai toujours été confronté aux limitations liées au budget. Débutant, mes exigences concernant les performances de mon matériel 
-sont limitées. Ajoutant à cela mes études d'ingénieur et les compétences qui en découlent, il est tout naturel que je me sois tourné vers le DIY pour renforcer mon équipement.
+Ayant découvert l'astronomie, en tant qu'étudiant il y a quelques années, j'ai toujours été confronté aux limitations liées au budget. Débutant, mes exigences concernant les performances de mon matériel sont limitées. Ajoutant à cela mes études d'ingénieur et les compétences qui en découlent, **il est tout naturel que je me sois tourné vers le DIY pour renforcer mon équipement.**
 
-Pour mieux comprendre la portée et le contexte du projet, il serait peut-être bien que je me présente : 
-Je suis Sylvain BROCAS, élève ingénieur à l'École Centrale de Lyon et passioné de sciences et de techniques. Touche à tout, je suis toujours à la recherche de nouvelles compétences et 
-de nouveaux défis, en particulier de projets mêlant mécanique, électronique et programmation. 
-Converti à la fabuleuse passion qu'est l'astronomie en arrivant dans mon école, je me suis rapidement tourné vers l'astrophotographie. Le but de mes sessions d'observation nocturne consiste donc 
-à repartir avec une image qui me satisfait. Au début de l'année 2024, j'étais déjà équipé avec un télescope (Un Arcane N180/1080 pour les connaisseurs), matériel performant mais lourd et encombrant. 
-J'ai donc investit dans une monture plus légère, une Star Adventurer de chez SkyWatcher. C'est une bonne petite monture, motorisée sur un axe, et fiable... maiiss il me manquait un petit quelque chose.
+Pour mieux comprendre la portée et le contexte du projet, il serait peut-être bien que je me présente :  Je suis **Sylvain BROCAS**, **élève ingénieur à l'École Centrale de Lyon** et passionné de sciences et de techniques. **Touche à tout**, je suis toujours à la recherche de nouvelles compétences et de nouveaux défis, en particulier de projets mêlant mécanique, électronique et programmation. 
+**Converti à la fabuleuse passion qu'est l'astronomie en arrivant dans mon école, je me suis rapidement tourné vers l'astrophotographie. Le but de mes sessions d'observation nocturne consiste donc à repartir avec une image qui me satisfait**. Au début de l'année 2024, j'étais déjà équipé avec un télescope (Un Arcane N180/1080 pour les connaisseurs), matériel performant mais lourd et encombrant. J'ai donc investit dans une monture plus légère, une Star Adventurer de chez SkyWatcher. C'est une bonne petite monture, motorisée sur un axe, et fiable… maiiss il me manquait un petit quelque chose.
 
 ![Silhouette nocturne](silhouette_nocturne.jpg)
 *Votre serviteur sous la constellation d'Orion*
 
-
 Pour ceux qui ne sont pas familiers avec ces termes techniques, voici un petit rappel :
-- **L'astrophotographie** est une technique photographique qui consiste à prendre des photos du ciel nocturne, en particulier des étoiles et des planètes. 
-Ce genre de photo demande de longs temps de pose (quelques secondes a plusieurs minutes pour 1 photo),
-ce qui nécessite un dispositif de suivi assez rapidement.
-- **Une monture** est un support qui permet de maintenir un télescope ou un appareil photo en mouvement, de manière à compenser la rotation de la Terre et permettre ces 
-longs temps de pose. Elle peut être motorisée pour automatiser le suivi
-- **Une monture Équatoriale** est un type de monture qui permet, après un phase de réglage (mise en station), de suivre un objet céleste en compensant la rotation de la 
-Terre en utilisant un seul axe de rotation.
+- **L'astrophotographie** est une technique photographique qui consiste à prendre des photos du ciel nocturne, en particulier des étoiles et des planètes. Ce genre de photo demande de longs temps de pose (quelques secondes a plusieurs minutes pour 1 photo), ce qui nécessite un dispositif de suivi assez rapidement.
+- **Une monture** est un support qui permet de maintenir un télescope ou un appareil photo en mouvement, de manière à compenser la rotation de la Terre et permettre ces longs temps de pose. Elle peut être motorisée pour automatiser le suivi.
+- **Une monture Équatoriale** est un type de monture qui permet, après un phase de réglage (mise en station), de suivre un objet céleste en compensant la rotation de la Terre en utilisant un seul axe de rotation.
 - **Un APN** est un Appareil Photo Numérique, un appareil photo classique type Reflex ou Hybride.
 
-Ce que j'attends d'une monture comme la Star Adventurer, c'est de la portabilité, de la légèreté et un minimum de performances. Cependant, je trouve que pour son poids, elle ne permet pas de porter un gros ensemble optique, elle est trop lourde pour des petits trepieds légers comme un étudiant dans mon cas est capable de se payer. La mise en station peut être difficile parce que le montage est sensible aux vibrations... et les perofrmances de la monture dépendent fortement de la qualité de la mise en station. Rajoutons a cela qu'elle ne dispose pas de pointage automatique, cette monture est bonne, mais elle peut se révéler fastidieuse à utiliser.
+**Ce que j'attends d'une monture comme la Star Adventurer, c'est de la portabilité, de la légèreté et un minimum de performances.** Cependant, je trouve que pour son poids, elle ne permet pas de porter un gros ensemble optique, elle est trop lourde pour des petits trépieds légers comme un étudiant dans mon cas est capable de se payer. La mise en station peut être difficile parce que le montage est sensible aux vibrations… et les performances de la monture dépendent fortement de la qualité de la mise en station. Rajoutons a cela qu'elle ne dispose pas de pointage automatique, **cette monture est bonne, mais elle peut parfois se révéler fastidieuse à utiliser.**
 
-Sa grande soeur, la [Star Adventurer GTi](http://www.skywatcher.com/product/star-adventurer-gti/) réponds à quelques problématiques mais coûte près de deux fois plus cher. J'ai donc décidé de me lancer dans la conception d'une monture équatoriale motorisée, qui répondrait à mes besoins et à mes contraintes. Je l'ai appelée **Starget**, contraction de Star et Target...je trouvais que ça matchait plutôt bien. 
+Sa grande sœur, la [Star Adventurer GTi](http://www.skywatcher.com/product/star-adventurer-gti/) réponds à quelques problématiques mais coûte près de deux fois plus cher. J'ai donc décidé de me lancer dans la conception d'une monture équatoriale motorisée, qui répondrait à mes besoins et à mes contraintes. Je l'ai appelée **Starget**, contraction de Star et Target… je trouvais que ça matchait plutôt bien. 
 
 > Mon objectif n'est pas de réinventer la roue ou de concurrencer les géants de l'astronomie, mais plutôt de concevoir une monture orientée vers l'ultra portabilité. Une monture assez spécialisée donc, dont le cadre d'utilisation se restreint principalement à de l'astrophotographie à l'APN, avec un objectif ou téléobjectif, avec un dispositif léger et robuste, qu'on peut facilement glisser dans un sac de voyage sans avoir à payer des bagages en plus.
 
-Vous l'aurez compris, dans ce projet, les gros défis vont reposer dans l'optimisation du poids, de l'ergonomie et bien sûr du prix final du dispositif. Mais ce n'est pas tout | Une monture c'est également un assemblage de pièces mécaniques qui n'existent que dans mon esprit, de composants életroniques qu'il va falloir assembler intelligement, programmer afin d'obtemnir un Tout fonctionnel.
+Vous l'aurez compris, dans ce projet, les gros défis vont reposer dans l'optimisation du poids, de l'ergonomie et bien sûr du prix final du dispositif. Mais ce n'est pas tout! Une monture c'est également un assemblage de pièces mécaniques qui n'existent que dans mon esprit, de composants électroniques qu'il va falloir assembler intelligemment, programmer afin d'obtenir un Tout fonctionnel.
 
-Je vous laisse plonger dans cette aventure avec moi, dans cet article, je vais vous amener avec moi dans la jungle que représente un tel projet. Sachez que je partage également régulièrement des nouvelles du projet sur notre [serveur discord](https://discord.com/invite/339KvZDSf7).
-
-
+**Je vous laisse plonger dans cette aventure avec moi, dans cet article, je vais vous amener avec moi dans la jungle que représente un tel projet. Sachez que je partage également régulièrement des nouvelles du projet sur notre [serveur discord](https://discord.com/invite/339KvZDSf7).**
 ## Avant-propos
 Comme dans tout projet, la première chose à faire, c'est de saisir un stylo, un papier (dans mon cas, un carnet entier ^^) et de poser au calme nos idées : 
 
-Qu'est-ce que je veux faire ? *Une monture astronomique*. Très bien, mais qu'a-t-elle de spécial cette monture ? *Elle est très légère, on peut le mettre dans son sac sans la casser, et ah, on peut l'alimenter avec une batterie externe...
-vu qu'on va l'utiliser dans les champs, à la montagne, *... Mais, au fait, existe-t-il déjà des montures similaires ? J'ai entendu parler d'Onstep par exemple.
+Qu'est-ce que je veux faire ? *Une monture astronomique*. Très bien, mais qu'a-t-elle de spécial cette monture ? *Elle est très légère, on peut le mettre dans son sac sans la casser, et ah, on peut l'alimenter avec une batterie externe… vu qu'on va l'utiliser dans les champs, à la montagne, … Mais, au fait, existe-t-il déjà des montures similaires ? J'ai entendu parler d'Onstep par exemple.
 
-> Onstep est un projet Open Source qui permet de motoriser une monture équatoriale facilement avec un micro-contrôleur et des drivers de moteurs pas-à-pas. C'est une solution très économique et très performante, mais assez mal documentée si l'on sort des composants classiques.
+> [Onstep](https://onstep.groups.io/g/main/wiki) est un projet Open Source qui permet de motoriser une monture astronomique facilement avec un microcontrôleur et des drivers de moteurs pas-à-pas. C'est une solution très économique et très performante, mais assez mal documentée si l'on sort des compositions classiques.
 
-*Oui, effectivement, Onstep est une bonne solution à mon problème, ça m'évite d'avoir à recoder un logiciel complet, ça m'aide à choisir les coposants électroniques...reste plus qu'à développer la mécanique, et ça tombe bien, c'est ce que je préfère !*
-**Mais ce serait passer à côté d'un aspect très important de ce projet : **je le vois comme un projet d'application, d'apprentissage. 
-Je vais beaucoup bouger pendant la fin de mes études, j'ai déjà du matériel à la maison... Avoir cette monture entre les mains 
-n'est pas urgent à mes yeux. De prendre le temps d'apprendre de nouvelles compétences, de me mettre au défi, de partager des 
-ressources avec internet, en particulier des ressources francophones qui peuvent manquer parfois... C'est là mon véritable objectif 
-derrière ce projet.
+*Oui, effectivement, Onstep est une bonne solution à mon problème, ça m'évite d'avoir à recoder un logiciel complet, ça m'aide à choisir les composants électroniques...reste plus qu'à développer la mécanique, et ça tombe bien, c'est ce que je préfère !*
 
-> En découvrant le projet, vous vous ferez peut-être parfois la reflexion que je fouille trop certains points, que je m'attarde sur des détails qui ne permettent pas de faire avancer le projet, mais gardez à l'esprit que j'y trouve sûrement un intérêt personnel derrière. N'hésitez en revanche pas à partager votre avis sur le projet, à me poser des questions, à me donner des conseils. La meilleure solution vient souvent des remarques les plus anodines.
+**Mais ce serait passer à côté d'un aspect très important de ce projet :** je le vois comme un projet d'application, d'apprentissage. Je vais beaucoup bouger pendant la fin de mes études, j'ai déjà du matériel à la maison… Avoir cette monture entre les mains n'est pas urgent à mes yeux. De rendre le temps d'apprendre de nouvelles compétences, de me mettre au défi, de partager des ressources avec internet, en particulier des ressources francophones qui peuvent manquer parfois… **C'est là mon véritable objectif derrière ce projet.**
 
+> En découvrant le projet, vous vous ferez peut-être parfois la réflexion que je fouille trop certains points, que je m'attache à des solutions qui ne permettent pas de faire avancer le projet, mais gardez à l'esprit que j'y trouve sûrement un intérêt, que j'éprouve de la curiosité à ce sujet. **N'hésitez en revanche pas à partager votre avis sur le projet, à me poser des questions, à me donner des conseils. La meilleure solution vient souvent des remarques les plus anodines.**
 
 ## Étape 1 : Structurer le projet
-Il est temps de passer pour de vrai au projet. Dans cete article, je vais rester assez général. D'autres articles viendrons pour expliquer en détail certains points techniques. Je vais aujorud'hui me contenter d'expliquer les grandes lignes du projet, les grandes étapes que je vais suivre pour arriver à mes fins.
+Il est temps de passer pour de vrai au projet. Dans cet article, je vais rester assez général. D'autres articles viendrons pour expliquer en détail certains points techniques. Je vais aujourd'hui me contenter d'expliquer les grandes lignes du projet, les grandes étapes que je vais suivre pour arriver à mes fins.
 
-> Une revue de projet sera (ou a été) diffusée sur notre chaîne Twitch justement pour présenter le projet et l'étudier un peu plus en profondeur.
+> **Une revue de projet sera (ou a été) diffusée sur notre [chaîne Twitch](http://www.twitch.tv/eos_projets) justement pour présenter le projet et l'étudier un peu plus en profondeur.**
 
 ### 1.1 : Cahier des charges
-Le cahier des charges de ce projet va rester assez simple, dans la mesure où il va évoluer au fur et à mesure des mes découvertes. 
-En effet, bein que déjà expérimenté en programmation, en conception, développer une monture est quelque chose d'assez particulier,
-je n'ai pas vraiment d'expérience dans ce domaine, il il m'a fallu plusieurs mois d'explorations pour comprendre comment était structurée une monture,
-quels étaient les composants comme les moteurs adaptés à cette application, quels outils existent déjà pour me faciliter la tâche sans tout réinventer.
+Le cahier des charges de ce projet va rester assez simple, dans la mesure où il va évoluer au fur et à mesure des mes découvertes. En effet, bien que déjà expérimenté en programmation, en conception, **développer une monture est quelque chose d'assez particulier**, je n'ai pas vraiment d'expérience dans ce domaine, il il m'a fallu plusieurs mois d'explorations pour comprendre comment était structurée une monture, quels étaient les composants comme les moteurs adaptés à cette application, quels outils existent déjà pour me faciliter la tâche sans tout réinventer.
 
 ---- CDC
 
 ### 1.2 : Planification
-Je vois ce projet comme un projet à moyen terme, organisé en plusieurs étapes :
+Je vois ce projet comme un **projet à moyen terme**, organisé en plusieurs étapes :
 
-1. **Recherche et documentation :** C'est ce que j'ai fait pendant plusieurs mois. J'ai lu des articles, des forums, des 
-documentations techniques, j'ai regardé des vidéos, des tutoriels... Cette étape est cruciale pour pouvoir placer le cursuer au bon endroit entre créér et réutiliser. Trop d'invention, 
-c'est trop de travail, et c'est rrisque l'abandon, pas assez, ce serait passer à côté des mes objectifs
-2. **Conception d'un premier prototype :** Cette version de la monture devra répondre au strict minimum des mes exigences 
-*(A savoir, la motorisation et le pointage sur les deux axes de la monture, et les critères de performance dans le pire des cas de chargement)***
+1. **Recherche et documentation :** C'est ce que j'ai fait pendant plusieurs mois. J'ai lu des articles, des forums, des documentations techniques, j'ai regardé des vidéos, des tutoriels… Cette étape est cruciale pour pouvoir placer le curseur au bon endroit entre créer et réutiliser. Trop d'invention, c'est trop de travail, et c'est risquer l'abandon, pas assez, ce serait passer à côté des mes objectifs.
+2. **Conception d'un premier prototype :** Cette version de la monture devra répondre au strict minimum des mes exigences *(A savoir, la motorisation et le pointage sur les deux axes de la monture, et les critères de performance dans le pire des cas de chargement)***
 3. **Test et validation du prototype :** Cette étape est cruciale pour valider les choix de conception, les choix de composants, et les choix de programmation. C'est aussi l'occasion de valider les performances de la monture. À partir de ce stade, le projet prends une autre tournure. On a un système fonctionnel, et on peut maintenant s'amuser à le pousser, en ajoutant des fonctionnalités, en optimisant sa conception, en corrigeant surtout les problèmes de la première version.
-4. **Finalisation du projet :** Cette étape est encore lointaine aujourd'hui. Ce projet a vocation aujourd'hui à rester ouvert. 
-Il faudra adjoindre aux fichiers sources de la documentation, peut-être vendrai-je également des kits pré-montés...
-Cette étape est encore lointaine aujourd'hui, mais il me faudra la préciser au cours du projet, en fonction de mon avancement et de l'intérêt que le projet suscite.
+4. **Finalisation du projet :** Cette étape est encore lointaine aujourd'hui. Ce projet a vocation aujourd'hui à rester ouvert. Il faudra adjoindre aux fichiers sources de la documentation, peut-être vendrai je également des kits prémontés … Il me faudra préciser cela au cours du projet, en fonction de mon avancement et de l'intérêt que le projet suscite.
 
 ## Étape 2 : Comment on conçoit une monture ?
 ### 2.1 : La structure
@@ -124,15 +99,16 @@ sequenceDiagram
 
 Pour construire ce programme, je ne pars pas de rien puisque ASCOM a publié il y a quelques mois des [templates](https://github.com/ASCOMInitiative/AlpycaDevice) avec un exemple. Bon... l'exemple porte sur un device de type rotateur, une machine qui tourne sur un axe, c'est loin d'être aussi complet qu'un téléscope mais je ne vais pas cracher dessus.
 
-> L'un de mes objectifs secondaires dans ce projet sera de publier *mes* templates pour développer un driver de téléscope pour aider la communauté.
+> L'un de mes objectifs secondaires dans ce projet sera de publier *mes* templates pour développer un driver de télescope pour aider la communauté.
 
+**Starget sera donc pilotable par un driver ASCOM Alpaca.**
 ## Étape 3 : Choix technologiques
 Maintenant qu'on a choisis l'architecture de Starget ainsi que le protocole de communication pour s'y connecter, il est possible de se pencher sur la suite. Voici comment je prévois de procéder :
 1. Coder les fonctions haut niveau du driver Alpaca : Sans driver, il n'y a pas de contrôle donc pas de monture. Il est logique de commencer par là. Par fonction haut niveau, j'entends la structure d'API en elle-même : récupération des requête, parsing des paramètres, gestion des erreurs etc...
 2. Concevoir l'ensemble électronique : Une fois qu'on a la première couche, il faut encore arrêter les choix de capteurs, de moteurs, ... et coder les fonctions bas niveau qui seront appelées par le driver pour exécuter les actions de la monture
 3. Concevoir la mécanique : Une fois qu'on a à la fois un logiciel et un circuit électronique fonctionnels, on peut s'affairer à rentrer tout ça dans une carcasse pour obtenir le produit final.
 
-> Ces trois phases ont été explorées dans les derniers mois, et des premières idées de solution ont déjà émmergé voire ont déjà été présentées, je parle ici du développement du prototype
+> Ces trois phases ont été explorées dans les derniers mois, et des premières idées de solution ont déjà émergé voire ont déjà été présentées, je parle ici du développement du prototype
 
 La suite de cet article porte sur la présentation des choix technologiques actuels et leur justification.
 
@@ -171,11 +147,11 @@ Utiliser ce driver assez évoluer me permet de m'éliminer beaucoup de travail d
 
 > Je tiens à mettre en avant l'[initiative suivante](https://creapunk.com/) : C'est un gars qui développe tout seul son propre driver pour un coût de revient très faible tout en préservant beaucoup d'options intéressantes et de bonnes performances. Le projet est en cours, il a déjà sorti plusieurs versions de son pcb et son software, mais par exemple, l'API de contrôle par port série n'est pas encore implémentée, ainsi que d'autres options de base. Si vous êtes compétents dans le domaine ou tout simplement curieux, essayez de contribuer à son projet, ou simplement lui faire un petit coucou sur son serveur [Discord](https://discord.com/invite/D4EkKaf5vV)
 
-Pour conclure cette section, j'ai choisis le [moteur suivant](https://www.laskakit.cz/user/related_files/73231_1624__ps_1199sm-17hs4023-etc.pdf) pour les deux axes de la monture : 
+**Pour conclure cette section, j'ai choisis le [moteur suivant](https://www.laskakit.cz/user/related_files/73231_1624__ps_1199sm-17hs4023-etc.pdf) pour les deux axes de la monture :** 
 ![Moteur pas à pas "low profile" - 17HS4023](17hs4023_stepper.png)
 
 ### 3.2 : L'unité centrale
-Pour traiter les instruction, activer les moteurs et lire les capteurs, il nous faut un cerveau, une unité de calcul. Pour sa puissance raisonnable, sa faible consommation et très faible encombrement, j'avais démarré ce projet avec un devkit ESP32 programmé en micropython. Cela permettait d'allier ma connaissance en python, la facilité de développement en conservant un support physique minimal. J'avais réussi à écrire un driver capable de se connecter à NINA (rappelez-vous, c'est le logiciel de contrôle) sur la base de [ce projet](https://github.com/RunTJoe/MiPyAlpaca). Mais je suis finalement tombé sur les templates d'ASCOM, disponibles en python, mais pas en version micropython. Certaines idées de futures implémentations auquelles je pense pour un stade bien plus avancé du projet m'ont poussé à me tourner finalement vers un Raspberry Pi. J'ai chosisis le modèle qui semble le plus adapté à mes besoins et mes contraintes : Le [Raspberi Pi Zero 2 W](https://datasheets.raspberrypi.com/rpizero2/raspberry-pi-zero-2-w-product-brief.pdf)
+Pour traiter les instruction, activer les moteurs et lire les capteurs, il nous faut un cerveau, une unité de calcul. Pour sa puissance raisonnable, sa faible consommation et très faible encombrement, j'avais démarré ce projet avec un devkit ESP32 programmé en micropython. Cela permettait d'allier ma connaissance en python, la facilité de développement en conservant un support physique minimal. J'avais réussi à écrire un driver capable de se connecter à NINA (rappelez vous, c'est le logiciel de contrôle) sur la base de [ce projet](https://github.com/RunTJoe/MiPyAlpaca). Mais je suis finalement tombé sur les templates d'ASCOM, disponibles en python, mais pas en version micropython. Certaines idées de futures implémentations auxquelles je pense pour un stade bien plus avancé du projet m'ont poussé à me tourner finalement vers un Raspberry Pi. **J'ai choisis le modèle qui semble le plus adapté à mes besoins et mes contraintes : Le [Raspberry Pi Zero 2 W](https://datasheets.raspberrypi.com/rpizero2/raspberry-pi-zero-2-w-product-brief.pdf)**
 
 Cette carte sera programmée en python. On peut y adjoindre des modules pour capter le signal GPS, des modules RTC pour garder l'heure en mémoire même hors tension, qui permettraient d'ajouter des fonctions pratiques pour Starget. La carte dispose également d'un port de communication UART qui permettra de contrôler entre autres choses les moteurs. Il y a également suffisamment d'entrées/sorties pour y brancher les capteurs qui équiperont la monture.
 
@@ -184,11 +160,11 @@ Globalement, hormis un premier [modèle](https://cad.onshape.com/documents/c2a5d
 
 Au cours de cette phase, je me suis rendu compte que j'aurai surement besoin d'un réducteur à placer en sortie des moteurs afin d'améliorer leur résolution angulaire, et augmenter le couple. 
 
-Voici le détail de mes calculs. Si vous avez des suggestions, des remarques à apporter vis-à-vis de cette section, je vous invite envore une fois à m'en faire part, que ce soit sur discord d'Eos, linkedIn,...
+Voici le détail de mes calculs. Si vous avez des suggestions, des remarques à apporter vis-à-vis de cette section, je vous invite encore une fois à m'en faire part, que ce soit sur discord d'Eos, LinkedIn,...
 
 Prenons le pire des cas : un objectif de 200mm sur un Reflex. Je prends exemple sur mon Canon 40D qui possède un capteur avec des pixels assez gros de 5.71 μm de côté et qui est assez lourd en comparaison des APN modernes. L'ensemble pèse de 1.5 à 2.5kg. Prenons 3.5 kg de charge utile pour être large.
 
-Pour estimer mon besoin de precision sur le suivi, voici mon raisonnement :
+Pour estimer mon besoin de précision sur le suivi, voici mon raisonnement :
 - Résolution moteur : 1.8°/step ou 0.9°/step (J'ai acheté des 1.8°/step)
 - Facteur de [microstepping](https://www.linearmotiontips.com/microstepping-basics/) : 0 à 256 
 - Focale : 200 mm ==> Focale effective : 320 mm (Prise en compte du [facteur de crop](https://neelnajaproduction.com/ce-quil-faut-savoir-sur-les-capteurs-et-crops-factors/))
@@ -198,7 +174,7 @@ Pour estimer mon besoin de precision sur le suivi, voici mon raisonnement :
 
 Un pixel couvre donc 3.68" d'arc dans cette configuration. Je veux que l'angle correspondant à un pas soit plus faible que cette valeur pour pouvoir suivre finement le ciel sans décalage entre les images. Si l'on se base sur le critère de Shannon, on devrait avoir un pas au moins deux fois plus fin que la résolution d'un pixel.
 
-D'après mes recherches, il ressort que le facteur de microstepping maximum utilisable en pratique pour ce genre d'application est de 32. 
+D'après mes recherches, il ressort que le facteur de **microstepping** maximum utilisable en pratique pour ce genre d'application est de 32. 
 
 >Le microstepping est une technique de commande d'un moteur pas à pas qui permet de multiplier virtuellement le nombre de pas d'un moteur et donc améliorer sa résolution angulaire. Un facteur de 32 signifie qu'on multiplie le nombre de positions possibles par 32, et qu'on divise par autant sans résolution angulaire. Utiliser le plus gros facteur possible permet de réduire le coefficient de réduction du réducteur qui serait éventuellement nécessaire, et donc de simplifier sa conception.
 
@@ -219,10 +195,18 @@ flowchart LR
 ```
 On remarque qu'un rapport de réduction de 120 devrait suffire pour atteindre la performance que je vise.
 
-> Une question qui se posera notamment lorsque j'aborderai plus en profondeur la partie mécanique de la monture concerne le backlash, c'est à dire le jeu dans la transmission de puissance. En effet, un jeu est nécessaire pour permettre l'engrènement entre les différentes parties du réducteur, mais un jeu pourrait potentiellement facilement atteindre la minute d'Arc voire le degré (rappelons que je prévois d'utiliser des moyens de production accessible en Fablab : impression 3D, découpeuse Laser, ...). À ce moment, l'erreur induite dépasserait largement cette valeur de quelques secondes et rendrait peut être superflu ce gros rapport de réduction. **Ce sera une partie importante de mon étude des performances mécaniques de ce projet**.
+> Une question qui se posera notamment lorsque j'aborderai plus en profondeur la partie mécanique de la monture concerne le **backlash**, c'est à dire le jeu dans la transmission de puissance. En effet, un jeu est nécessaire pour permettre l'engrènement entre les différentes parties du réducteur, mais un jeu pourrait potentiellement facilement atteindre la minute d'Arc voire le degré (rappelons que je prévois d'utiliser des moyens de production accessible en Fablab : impression 3D, découpeuse Laser, …). À ce moment, l'erreur induite dépasserait largement cette valeur de quelques secondes et rendrait peut être superflu ce gros rapport de réduction. **Ce sera une partie importante de mon étude des performances mécaniques de ce projet**.
 
-Le ratio calculé a une valeur très élevée, 120. Même les réducteurs de type harmonic drive qui sont réputés pour permettre de gros ratios d'entraînement montent difficilement aussi haut. Je pourrais très bien assembler plusieurs étages de réducteurs, mais c'est très encombrant. 
+Le ratio calculé a une valeur très élevée, 120. Même les réducteurs de type *harmonic drive* qui sont réputés pour permettre de gros ratios d'entraînement montent difficilement aussi haut. Je pourrais très bien assembler plusieurs étages de réducteurs, mais c'est très encombrant. 
+
 D'après mes recherches, deux solutions s'offrent à moi :
-    - **Solution roue/vis sans fin:** C'est une solution classique sur les petites montures...comme la Star Adventurer. Un tel réducteur s'achète pour une trentaine d'euros sur amazone (roue dentée et vis sans fin, sans roulements).
-    - **Solution basée sur un Split Ring Compound Planetary Gear:** Ce genre de réducteur est assez peu connu, bien qu.il ait visiblement été utilisé régulièrement en automobile, pour des modèles de formula Student, ...
+    - **Solution roue/vis sans fin:** C'est une solution classique sur les petites montures...comme la Star Adventurer. Un tel réducteur s'achète pour une trentaine d'euros sur Amazon (roue dentée et vis sans fin, sans roulements).
+    - **Solution basée sur un Split Ring Compound Planetary Gear:** Ce genre de réducteur est assez peu connu, bien qu.il ait visiblement été utilisé régulièrement en automobile, pour des modèles de [formula Student](https://lup.lub.lu.se/luur/download?func=downloadFile&recordOId=9152714&fileOId=9152738), …
 
+Pour le coup, la solution à base de vis sans fin semble s'imposer d'elle même : système connu, un coût pas trop élevé, déjà utilisé par d'autres systèmes, …
+Mais encore une fois, je vois dans ce projet l'occasion de tester des choses, de comprendre comment ça marche ( la grande différence entre les deux solutions tient aussi dans mon niveau de compréhension du mécanisme ^^). Or, si il existe des articles scientifiques traitant principalement de design optimal de SRCPG (oui j'abrège, c'est long à écrire) ainsi que des modes propres du système, je n'ai pas trouvé beaucoup de ressources pour le rendre accessible au niveau bidouilleur. On trouve bien quelques vidéos et articles de blog très intéressants, en particulier [cette vidéo](https://www.youtube.com/watch?v=-VtbSvVxaFA) ainsi que le [repo Github](https://github.com/IdeaPropulsionSystems/CoolEpicyclicGearing) qui va avec, notamment parce qu'elle fait partie des ressources qui explique le mieux à la fois le mécanisme et les équations qui le régissent. Ensuite, il y a quelques posts Hackaday comme [celui-ci](https://hackaday.io/project/164732-mprt-modified-planetary-robotics-transmission) ou [celui-là](https://hackaday.io/project/196907-rr1-real-robot-one-revision-2/log/233687-1x-how-to-calculate-the-reduction-ratio-of-split-ring-planetary-gearbox) qui ont retenus mon attention.
+
+**Par conséquent, pour des raisons de curiosité et de volonté d'en comprendre un peu plus sur ce mécanisme qui semble sous-coté, j'ai choisi de l'utiliser pour Starget.**
+
+
+> Un article viendra à l'avenir pour expliquer plus en détail le fonctionnement de ce type de réducteur et partager mon implémentation au sein de Starget
