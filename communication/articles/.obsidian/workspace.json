@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "b36b35ccce2fc105",
+        "id": "7b7ee35d8cfbd0ad",
         "type": "tabs",
         "children": [
           {
-            "id": "5d3b919a146663bf",
+            "id": "b3835648f069d6e6",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -168,6 +168,13 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "5d3b919a146663bf",
-  "lastOpenFiles": []
+  "active": "b3835648f069d6e6",
+  "lastOpenFiles": [
+    "pres_projet.md",
+    "schema_telescope_param (2).svg",
+    "Untitled-2025-01-13-0911(1).svg",
+    "schema_telescope_param.svg",
+    "Untitled.png",
+    "Pasted image 20250220121742.png"
+  ]
 }

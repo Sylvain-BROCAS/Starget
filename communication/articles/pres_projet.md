@@ -1,11 +1,11 @@
 # Starget : Conception d'une monture astronomique
 Ayant découvert l'astronomie, en tant qu'étudiant il y a quelques années, j'ai toujours été confronté aux limitations liées au budget. Débutant, mes exigences concernant les performances de mon matériel sont limitées. Ajoutant à cela mes études d'ingénieur et les compétences qui en découlent, **il est tout naturel que je me sois tourné vers le DIY pour renforcer mon équipement.**
 
-Pour mieux comprendre la portée et le contexte du projet, il serait peut-être bien que je me présente :  Je suis **Sylvain BROCAS**, **élève ingénieur à l'École Centrale de Lyon** et passionné de sciences et de techniques. **Touche à tout**, je suis toujours à la recherche de nouvelles compétences et de nouveaux défis, en particulier de projets mêlant mécanique, électronique et programmation. 
-**Converti à la fabuleuse passion qu'est l'astronomie en arrivant dans mon école, je me suis rapidement tourné vers l'astrophotographie. Le but de mes sessions d'observation nocturne consiste donc à repartir avec une image qui me satisfait**. Au début de l'année 2024, j'étais déjà équipé avec un télescope (Un Arcane N180/1080 pour les connaisseurs), matériel performant mais lourd et encombrant. J'ai donc investit dans une monture plus légère, une Star Adventurer de chez SkyWatcher. C'est une bonne petite monture, motorisée sur un axe, et fiable… maiiss il me manquait un petit quelque chose.
+Pour mieux comprendre la portée et le contexte du projet, il serait peut-être bien que je me présente :  Je suis **Sylvain BROCAS**, **élève ingénieur à l'École Centrale de Lyon** et passionné de sciences et de techniques. **Touche à tout**, je suis toujours à la recherche de nouvelles compétences et de nouveaux défis, en particulier de projets mêlant **mécanique, électronique et programmation**. 
+**Converti à la fabuleuse passion qu'est l'astronomie en arrivant dans mon école, je me suis rapidement tourné vers l'astrophotographie. Le but de mes sessions d'observation nocturne consiste donc à repartir avec une image qui me satisfait**. Au début de l'année 2024, j'étais déjà équipé avec un télescope (Un Arcane N180/1080 pour les connaisseurs), matériel performant mais lourd et encombrant. J'ai donc investit dans une monture plus légère, une [Star Adventurer](http://skywatcher.com/product/star-adventurer/) de chez SkyWatcher. C'est une bonne petite monture, motorisée sur un axe, et fiable… maiiss il me manquait un petit quelque chose.
 
 ![Silhouette nocturne](silhouette_nocturne.jpg)
-*Votre serviteur sous la constellation d'Orion*
+                      *Votre serviteur sous la constellation d'Orion*
 
 Pour ceux qui ne sont pas familiers avec ces termes techniques, voici un petit rappel :
 - **L'astrophotographie** est une technique photographique qui consiste à prendre des photos du ciel nocturne, en particulier des étoiles et des planètes. Ce genre de photo demande de longs temps de pose (quelques secondes a plusieurs minutes pour 1 photo), ce qui nécessite un dispositif de suivi assez rapidement.
@@ -22,7 +22,7 @@ Sa grande sœur, la [Star Adventurer GTi](http://www.skywatcher.com/product/star
 Vous l'aurez compris, dans ce projet, les gros défis vont reposer dans l'optimisation du poids, de l'ergonomie et bien sûr du prix final du dispositif. Mais ce n'est pas tout! Une monture c'est également un assemblage de pièces mécaniques qui n'existent que dans mon esprit, de composants électroniques qu'il va falloir assembler intelligemment, programmer afin d'obtenir un Tout fonctionnel.
 
 **Je vous laisse plonger dans cette aventure avec moi, dans cet article, je vais vous amener avec moi dans la jungle que représente un tel projet. Sachez que je partage également régulièrement des nouvelles du projet sur notre [serveur discord](https://discord.com/invite/339KvZDSf7).**
-## Avant-propos
+## Avant-propos 
 Comme dans tout projet, la première chose à faire, c'est de saisir un stylo, un papier (dans mon cas, un carnet entier ^^) et de poser au calme nos idées : 
 
 Qu'est-ce que je veux faire ? *Une monture astronomique*. Très bien, mais qu'a-t-elle de spécial cette monture ? *Elle est très légère, on peut le mettre dans son sac sans la casser, et ah, on peut l'alimenter avec une batterie externe… vu qu'on va l'utiliser dans les champs, à la montagne, … Mais, au fait, existe-t-il déjà des montures similaires ? J'ai entendu parler d'Onstep par exemple.
@@ -31,52 +31,69 @@ Qu'est-ce que je veux faire ? *Une monture astronomique*. Très bien, mais qu'a-
 
 *Oui, effectivement, Onstep est une bonne solution à mon problème, ça m'évite d'avoir à recoder un logiciel complet, ça m'aide à choisir les composants électroniques...reste plus qu'à développer la mécanique, et ça tombe bien, c'est ce que je préfère !*
 
-**Mais ce serait passer à côté d'un aspect très important de ce projet :** je le vois comme un projet d'application, d'apprentissage. Je vais beaucoup bouger pendant la fin de mes études, j'ai déjà du matériel à la maison… Avoir cette monture entre les mains n'est pas urgent à mes yeux. De rendre le temps d'apprendre de nouvelles compétences, de me mettre au défi, de partager des ressources avec internet, en particulier des ressources francophones qui peuvent manquer parfois… **C'est là mon véritable objectif derrière ce projet.**
+**Mais ce serait passer à côté d'un aspect très important de ce projet :** je le vois comme un projet d'application, d'apprentissage. Je vais beaucoup bouger pendant la fin de mes études, j'ai déjà du matériel à la maison… Avoir cette monture entre les mains n'est pas urgent à mes yeux. Prendre le temps d'apprendre de nouvelles compétences, me mettre au défi, partager des ressources avec internet, en particulier des ressources francophones qui peuvent manquer parfois… **C'est là mon véritable objectif derrière ce projet.**
 
 > En découvrant le projet, vous vous ferez peut-être parfois la réflexion que je fouille trop certains points, que je m'attache à des solutions qui ne permettent pas de faire avancer le projet, mais gardez à l'esprit que j'y trouve sûrement un intérêt, que j'éprouve de la curiosité à ce sujet. **N'hésitez en revanche pas à partager votre avis sur le projet, à me poser des questions, à me donner des conseils. La meilleure solution vient souvent des remarques les plus anodines.**
 
 ## Étape 1 : Structurer le projet
 Il est temps de passer pour de vrai au projet. Dans cet article, je vais rester assez général. D'autres articles viendrons pour expliquer en détail certains points techniques. Je vais aujourd'hui me contenter d'expliquer les grandes lignes du projet, les grandes étapes que je vais suivre pour arriver à mes fins.
 
-> **Une revue de projet sera (ou a été) diffusée sur notre [chaîne Twitch](http://www.twitch.tv/eos_projets) justement pour présenter le projet et l'étudier un peu plus en profondeur.**
+> **Une revue de projet sera justement (ou a été) diffusée sur notre [chaîne Twitch](http://www.twitch.tv/eos_projets)  le Samedi 1er Mars 2025 pour présenter le projet et l'étudier un peu plus en profondeur.**
 
 ### 1.1 : Cahier des charges
-Le cahier des charges de ce projet va rester assez simple, dans la mesure où il va évoluer au fur et à mesure des mes découvertes. En effet, bien que déjà expérimenté en programmation, en conception, **développer une monture est quelque chose d'assez particulier**, je n'ai pas vraiment d'expérience dans ce domaine, il il m'a fallu plusieurs mois d'explorations pour comprendre comment était structurée une monture, quels étaient les composants comme les moteurs adaptés à cette application, quels outils existent déjà pour me faciliter la tâche sans tout réinventer.
+Le cahier des charges de ce projet va rester assez simple et général, dans la mesure où il va évoluer au fur et à mesure des mes découvertes. En effet, bien que déjà expérimenté en programmation, en conception, **développer une monture est quelque chose d'assez particulier**, je n'ai pas vraiment d'expérience dans ce domaine, il m'a fallu plusieurs mois d'explorations pour comprendre comment était structurée une monture, quels étaient les composants comme les moteurs adaptés à cette application, quels outils existent déjà pour me faciliter la tâche sans tout réinventer.
 
----- CDC
+| Critère                 | Description                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------- |
+| Charge utile            | Supporter un APN avec des objectifs jusqu'à 300 mm de focale, pour une charge totale de 2 à 3 kg. |
+| Portabilité             | Conception légère et compacte, adaptée au transport dans un sac à dos standard.                   |
+| Consommation électrique | Faible, adaptée aux sorties sur le terrain.                                                       |
+| Contrôle                | Pilotage via un PC utilisant le logiciel d'astrophotographie NINA.                                |
+| Fabrication             | Moyens de fabrication accessibles (Fablab et matériel personnel).                                 |
+**Pour synthétiser, je veux me placer au niveau de performances équivalent à celui d'une Star Adventurer, mais avec une structure plus légère et le support du GOTO, à destination d'une utilisation comme setup ultraportable.**
 
 ### 1.2 : Planification
+
 Je vois ce projet comme un **projet à moyen terme**, organisé en plusieurs étapes :
 
-1. **Recherche et documentation :** C'est ce que j'ai fait pendant plusieurs mois. J'ai lu des articles, des forums, des documentations techniques, j'ai regardé des vidéos, des tutoriels… Cette étape est cruciale pour pouvoir placer le curseur au bon endroit entre créer et réutiliser. Trop d'invention, c'est trop de travail, et c'est risquer l'abandon, pas assez, ce serait passer à côté des mes objectifs.
+1. **Recherche et documentation :** C'est ce que j'ai fait pendant plusieurs mois. J'ai lu des articles, des forums, des documentations techniques, essayé des prototypes, j'ai regardé des vidéos, des tutoriels… Cette étape est cruciale pour pouvoir placer le curseur au bon endroit entre créer et réutiliser. *Trop d'invention, c'est trop de travail, et c'est risquer l'abandon, pas assez, ce serait passer à côté des mes objectifs.*
 2. **Conception d'un premier prototype :** Cette version de la monture devra répondre au strict minimum des mes exigences *(A savoir, la motorisation et le pointage sur les deux axes de la monture, et les critères de performance dans le pire des cas de chargement)***
 3. **Test et validation du prototype :** Cette étape est cruciale pour valider les choix de conception, les choix de composants, et les choix de programmation. C'est aussi l'occasion de valider les performances de la monture. À partir de ce stade, le projet prends une autre tournure. On a un système fonctionnel, et on peut maintenant s'amuser à le pousser, en ajoutant des fonctionnalités, en optimisant sa conception, en corrigeant surtout les problèmes de la première version.
 4. **Finalisation du projet :** Cette étape est encore lointaine aujourd'hui. Ce projet a vocation aujourd'hui à rester ouvert. Il faudra adjoindre aux fichiers sources de la documentation, peut-être vendrai je également des kits prémontés … Il me faudra préciser cela au cours du projet, en fonction de mon avancement et de l'intérêt que le projet suscite.
 
 ## Étape 2 : Comment on conçoit une monture ?
 ### 2.1 : La structure
-Pour bien concevoir une monture, il faut d'abord comprendre comment elle fonctionne et ce qui la compose. Basiquement, quelque soit son architecture, une monture ce sont deux axes orthogonaux qui permettent de balayer toute la voûte céleste, et qui, dans notre cas, seront motorisés. Les moteurs, mais aussi les éventuels capteurs, connecteurs etc seront gérés automatiquement par une carte électronique, un genre d'unité centrale.
+Pour bien concevoir une monture, il faut d'abord comprendre comment elle fonctionne et ce qui la compose. Basiquement, quelque soit son architecture, une monture ce sont deux axes orthogonaux qui permettent de balayer toute la voûte céleste, et qui, dans notre cas, seront motorisés. Les moteurs, mais aussi les éventuels capteurs, connecteurs, ... seront gérés automatiquement par une carte électronique, un genre d'unité centrale.
 
 Je ne rentrerai pas dans le détail de toutes les architectures physiques de monture qui existent, je vous laisse un petit lien vers une une ressource assez exhaustive sur le sujet [ici](http://serge.bertorello.free.fr/optique/montures/montures.html). Sachez simplement que j'ai choisis une architecture de monture équatoriale.
 
-
 ### 2.2 : Utilisation d'une monture
 Une monture s'utilise de la manière suivante : 
-    - **Installation du matériel :** On place la monture sur son trepied, on la charge avec notre ensemble optique
-    - **Mise en station (Si monture équatoriale) :** Sur certaines montures (dont Starget), il faut  aligner un axex de la monture avec la rotation de la Terre à travers une opération appelée mise en station
-    - **Connecter la monture à un élément de contrôle :** Ce dernier, une fois connecté à la monture lui enverra les instructions et lui demandera son état (position, est-ce qu'elle bouge, ...). L'unité centrale doit ensuite convertir ces instructions "haut niveau" en instructions "bas niveau" pour les moteurs, les capteurs, ... 
+    - **Installation du matériel :** On place la monture sur son trépied, on la charge avec notre ensemble optique.
+    - **Mise en station (Si monture équatoriale) :** Sur certaines montures (dont Starget), il faut  aligner un axe de la monture avec la rotation de la Terre à travers une opération appelée mise en station.
+    - **Connecter la monture à un élément de contrôle :** Ce dernier, une fois connecté à la monture lui enverra les instructions et lui demandera son état (position, est-ce qu'elle bouge, …). L'unité centrale doit ensuite convertir ces instructions "haut niveau" en instructions "bas niveau" pour les moteurs, les capteurs, …
+    - **Initialisation :** Après une éventuelle phase d'initialisation pour synchroniser la monture et le logiciel de contrôle, la monture est utilisable.
     
-> En règle générale, l'élément de contrôle est un logiciel PC, mais il peut aussi s'agir d'une application mobile ou d'une télécommande. Dans notre cas, le premier prototype sera pensé pour fonctionner avec le logiciel [NINA](https://nighttime-imaging.eu/), très répandu dans le monde de l'astronophotographie.
+> En règle générale, l'élément de contrôle est un logiciel PC, mais il peut aussi s'agir d'une application mobile ou d'une télécommande. Dans notre cas, le premier prototype sera pensé pour fonctionner avec le logiciel [NINA](https://nighttime-imaging.eu/), très répandu dans le monde de l'astrophotographie.
 
 ### 2.3 : La connexion avec l'élément de contrôle
 Pour connecter la monture à l'élément de contrôle, il faut choisir un **protocole de communication**. Il en existe plusieurs dédiés à l'astronomie et supportés par quasiment tous les logiciels de contrôle de monture, j'ai choisis de travailler avec une solution qui s'appelle **Alpaca, développé par ASCOM**, grand nom du domaine.
 
-Alpaca est un protocole de communication qui permet de contrôler des équipements astronomiques à distance, via par exemple un réseau local, mais qui a aussi la particularité d'être multiplateforme. Cela signifie que le driver de la monture pourra être utilisé depuis un PC Windows, Linux, un smartphone sans avoir à réécrire le code pour chaque plateforme.
 
-Voici comment fonctionne Alpaca : Pour construire le driver qui permettra la communication entre l'élément de contrôle et la monture, il faut développer un driver *Client* côté contrôle, et un driver *Device* côté monture qui respectivement enverront et recevront les instruction. Le driver *Client* est déjà implémenté dans la plupart des logiciels astro, c'est quelque chose que je n'aurai pas à faire. Il me reste tout de même à développer le bout de code qui transformera des ordres standardisés et les paramètres qui seront associés à la commande en une action physique de la monture (mouvement, lecture de la position, ...)
+<p align="center" width="100%">
+    <img width="33%" src="data:image/png;base64,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"><br>
+		<i>Logo du protocole Alpaca</i>
+</p>
+
+Alpaca est un protocole de communication qui permet de contrôler des équipements astronomiques à distance, via par exemple un réseau local, mais a aussi la particularité d'être multiplateforme. Cela signifie que le driver de la monture pourra être utilisé depuis un PC Windows, Linux, un smartphone sans avoir à réécrire le code pour chaque plateforme.
+
+**Voici comment fonctionne Alpaca** : Pour construire le driver qui permettra la communication entre l'élément de contrôle et la monture, il faut développer un driver *Client* côté contrôle, et un driver *Device* côté monture qui respectivement enverront et recevront les instruction. Le driver *Client* est déjà implémenté dans la plupart des logiciels astro, c'est quelque chose que je n'aurai pas à faire. Il me reste tout de même à développer le bout de code qui transformera des messages standardisés et les **paramètres**** associés à la commande en une action physique de la monture (mouvement, lecture de la position, …)
 
 Le diagramme suivant précise le parcours communications au sein d'un driver Alpaca :
 ```mermaid
+
+%%{init: {'themeVariables': {'sequenceDiagramActorFontSize': '10px', 'sequenceDiagramNoteFontSize': '10px', 'sequenceDiagramMessageFontSize': '10px', 'sequenceDiagramMargin': 0}}}%%
+
 sequenceDiagram
     participant Client as Application Client
     participant Server as Serveur Alpaca
@@ -95,27 +112,29 @@ sequenceDiagram
     Driver-->>Server: Format JSON
     Server-->>Client: Réponse HTTP
 ```
-> Un driver Alpaca est en fait tout simplement une API que l'on peut constuire dans n'importe quel langage tant qu'on peut créer un réseau entre l'élément de contrôle et la monture (Dans mon cas, je pense au Wifi)
 
-Pour construire ce programme, je ne pars pas de rien puisque ASCOM a publié il y a quelques mois des [templates](https://github.com/ASCOMInitiative/AlpycaDevice) avec un exemple. Bon... l'exemple porte sur un device de type rotateur, une machine qui tourne sur un axe, c'est loin d'être aussi complet qu'un téléscope mais je ne vais pas cracher dessus.
+> Un driver Alpaca est en fait tout simplement une API que l'on peut construire dans n'importe quel langage tant qu'on peut créer un réseau entre l'élément de contrôle et la monture (Dans mon cas, je pense au Wifi).
 
-> L'un de mes objectifs secondaires dans ce projet sera de publier *mes* templates pour développer un driver de télescope pour aider la communauté.
+Pour construire ce programme, je ne pars pas de rien puisque ASCOM a publié il y a quelques mois des [templates](https://github.com/ASCOMInitiative/AlpycaDevice) avec un exemple. Bon… l'exemple porte sur un Device de type rotateur, une machine qui tourne sur un axe, c'est loin d'être aussi complet qu'un télescope mais je ne vais pas cracher dessus.
+
+> L'un de mes objectifs secondaires dans ce projet sera de publier mes templates pour développer un driver de télescope pour aider la communauté.
 
 **Starget sera donc pilotable par un driver ASCOM Alpaca.**
 ## Étape 3 : Choix technologiques
 Maintenant qu'on a choisis l'architecture de Starget ainsi que le protocole de communication pour s'y connecter, il est possible de se pencher sur la suite. Voici comment je prévois de procéder :
-1. Coder les fonctions haut niveau du driver Alpaca : Sans driver, il n'y a pas de contrôle donc pas de monture. Il est logique de commencer par là. Par fonction haut niveau, j'entends la structure d'API en elle-même : récupération des requête, parsing des paramètres, gestion des erreurs etc...
-2. Concevoir l'ensemble électronique : Une fois qu'on a la première couche, il faut encore arrêter les choix de capteurs, de moteurs, ... et coder les fonctions bas niveau qui seront appelées par le driver pour exécuter les actions de la monture
-3. Concevoir la mécanique : Une fois qu'on a à la fois un logiciel et un circuit électronique fonctionnels, on peut s'affairer à rentrer tout ça dans une carcasse pour obtenir le produit final.
+1. **Coder les fonctions haut niveau du driver Alpaca :** Sans driver, il n'y a pas de contrôle donc pas de monture. Il est logique de commencer par là. Par fonction haut niveau, j'entends la structure d'API en elle-même : récupération des requête, parsing des paramètres, gestion des erreurs etc...
+2. **Concevoir l'ensemble électronique :** Une fois qu'on a la première couche, il faut encore arrêter les choix de capteurs, de moteurs, … et coder les fonctions bas niveau qui seront appelées par le driver pour exécuter les actions de la monture
+3. **Concevoir la mécanique :** Une fois qu'on a à la fois un logiciel et un circuit électronique fonctionnels, on peut s'affairer à rentrer tout ça dans une carcasse pour obtenir le produit final.
 
-> Ces trois phases ont été explorées dans les derniers mois, et des premières idées de solution ont déjà émergé voire ont déjà été présentées, je parle ici du développement du prototype
+> Ces trois phases ont été explorées dans les derniers mois, et des premières idées de solution voire des prototypes ont déjà émergé, je parle ici du développement effectif de la solution finale
 
-La suite de cet article porte sur la présentation des choix technologiques actuels et leur justification.
+**La suite de cet article porte sur la présentation des choix technologiques actuels et leur justification.**
 
 ### 3.1 : La motorisation
-On l'a dit plus haut... pour bouger, la monture a besoin de moteurs. On va s'intéresser ici au choix de ce composant.
+On l'a dit plus haut… pour bouger, la monture a besoin de moteurs. On va s'intéresser ici au choix de ce composant.
 
-Première question à se poser : Qu'est-ce qui existe comme type de moteur (abordables étant donné mes contraintes) ? Deuxième question : Qu'Est-ce qui se fait sur les autres montures ?
+Première question à se poser : *Qu'est-ce qui existe comme type de moteur (abordables étant donné mes contraintes) ?* Deuxième question : *Qu'est-ce qui se fait sur les autres montures ?*
+
 Au niveau des moteurs, 3 technologies ressortent particulièrement :
 
 | Caractéristique / Characteristic | Moteur à Broches / Brushed Motor | Moteur Sans Broches / Brushless Motor | Moteur Pas à Pas / Stepper Motor |
@@ -125,8 +144,7 @@ Au niveau des moteurs, 3 technologies ressortent particulièrement :
 | Applications typiques | • Équipements automobiles<br>• Appareils électroménagers<br>• Jouets | • Véhicules électriques<br>• Machines industrielles<br>• Produits de consommation | • Machines CNC<br>• Imprimantes 3D<br>• Robots industriels |
 | Caractéristiques techniques| • Relation linéaire couple-vitesse<br>• Facilement contrôlable<br>• Simple à mettre en œuvre | • Haute efficacité énergétique<br>• Faible friction interne<br>• Longue durée de vie | • Pas précis et répétable<br>• Positionnement exact<br>• Couple élevé à basse vitesse |
 
-La grande différence entre les moteurs brushed/brushless et les pas à pas réside principalement dans leur mode de commande. Les premiers se commandent en vitesse : en fonction de la tension "lue" à leur borne, un couple provoque la rotation du rotor qui se stabilise à une certaine vitesse. Dans le cas du moteur pas à pas, le rotor est composé d'aimants et le stator de bobines. Si une bobine est activée, le rotor va se placer en face des pôles attractifs. En alimentant astucieusement les bobines, on peut faire tourner le champs magnétique et le moteur va le suivre. Les fameux *pas* du moteur sont toutes ces positions d'équilibre en face des bobines.
-Cette grande différence entre les technos a une grande conséquence : Les moteurs brushed/brushless se commandent naturellement en vitesse alors qu'un moteur pas à pas permet de se commander en position.
+La grande différence entre les moteurs brushed/brushless et les pas à pas réside principalement dans leur mode de commande. Les premiers se commandent en vitesse : en fonction de la tension "lue" à leur borne, un couple provoque la rotation du rotor qui se stabilise à une certaine vitesse. Dans le cas du moteur pas à pas, le rotor est composé d'aimants et le stator de bobines. Si une bobine est activée, le rotor va se placer en face des pôles attractifs. En alimentant astucieusement les bobines, on peut faire tourner le champs magnétique et le moteur va le suivre. Les fameux *pas* du moteur sont toutes ces positions d'équilibre en face des bobines. **Cette grande différence entre les technos a une grande conséquence : Les moteurs brushed/brushless se commandent naturellement en vitesse alors qu'un moteur pas à pas permet de se commander en position.**
 
 Reprenons un peu de recul sur notre projet, et demandons nous quels mouvements devra réaliser Starget. On peut distinguer deux mouvements principaux :
 - **Le Tracking :** La monture doit suivre la rotation de la Terre. Ce suivi est réalisé par la rotation en continu d'un axe *(Axe d'Ascension Droite)* à une vitesse de 15°/h environ. Il faut qu'il soit le plus lisse et continu possible pour assurer un bon suivi de l'objet
@@ -134,18 +152,18 @@ Reprenons un peu de recul sur notre projet, et demandons nous quels mouvements d
 
 > On notera que pour un Slew, la position d'arrivée est très importante (quelques degrés de différence peut faire manquer une cible)
 
-On se rend compte que le paramètre le plus important dans ces mouvements est la précision de positionnement et le contrôle sur la vitesse sur les faibles vitesses. Pour cette application, le moteur pas à pas est tout indiqué ... et utilisé sur un grand nombre de montures
+On se rend compte que **le paramètre le plus important dans ces mouvements est la précision de positionnement et le contrôle sur la vitesse sur les faibles vitesses**. Pour cette application, le moteur pas à pas est tout indiqué … et utilisé sur un grand nombre de montures
 
 > Après quelques recherches sur le sujet, on se rend compte qu'il est tout à fait possible, avec un circuit de contrôle en boucle fermée de piloter un moteur brushless en position avec une bonne précision. Le dispositif est un peu plus cher, même pour les solutions Open Sources déjà existantes. Mais un tel moteur pourrait laisser envisager un gain de poids et de place certain, ainsi qu'une diminution des vibrations par rapport à un moteur pas à pas. Cela viendra peut être dans une version future de Starget.
 
-Conclusion, Starget sera dotée de moteurs pas à pas dans sa premnière version. Après réflexion, j'ai décidé d'opter pour ce [driver](https://github.com/makerbase-mks/MKS-SERVO42C) en boucle fermée. il offre plusieurs options intéressantes :
-- Commandes en UART : On envoie des commandes par liaison série, le driver se charge de l'exécution de son côté, sans bloquer le reste du programme de la monture
-- La plateforme est bien documentée
-- La carte prends très peu de place et est très légère...tout ce que je recherche
+**Starget sera donc dotée de moteurs pas à pas dans sa première version. Après réflexion, j'ai décidé d'opter pour ce [driver](https://github.com/makerbase-mks/MKS-SERVO42C) en boucle fermée. il offre plusieurs options intéressantes :**
+- **Commandes en UART : On envoie des commandes par liaison série, le driver se charge de l'exécution de son côté, sans bloquer le reste du programme de la monture**
+- **La plateforme est bien documentée**
+- **La carte prends très peu de place et est très légère...tout ce que je recherche**
 
-Utiliser ce driver assez évoluer me permet de m'éliminer beaucoup de travail du côté motorisation, ce qui est une bonne chose.
+Utiliser ce driver assez évolué me permet de m'éliminer beaucoup de travail du côté motorisation, ce qui est une bonne chose.
 
-> Je tiens à mettre en avant l'[initiative suivante](https://creapunk.com/) : C'est un gars qui développe tout seul son propre driver pour un coût de revient très faible tout en préservant beaucoup d'options intéressantes et de bonnes performances. Le projet est en cours, il a déjà sorti plusieurs versions de son pcb et son software, mais par exemple, l'API de contrôle par port série n'est pas encore implémentée, ainsi que d'autres options de base. Si vous êtes compétents dans le domaine ou tout simplement curieux, essayez de contribuer à son projet, ou simplement lui faire un petit coucou sur son serveur [Discord](https://discord.com/invite/D4EkKaf5vV)
+> Je tiens à mettre en avant l'[initiative suivante](https://creapunk.com/) : C'est un gars qui développe tout seul son propre driver pour un coût de revient très faible tout en préservant beaucoup d'options intéressantes et de bonnes performances. Le projet est en cours, il a déjà sorti plusieurs versions de son PCB et son software, mais par exemple, l'API de contrôle par port série n'est pas encore implémentée, ainsi que d'autres options de base. Si vous êtes compétents dans le domaine ou tout simplement curieux, essayez de contribuer à son projet, ou simplement lui faire un petit coucou sur son serveur [Discord](https://discord.com/invite/D4EkKaf5vV)
 
 **Pour conclure cette section, j'ai choisis le [moteur suivant](https://www.laskakit.cz/user/related_files/73231_1624__ps_1199sm-17hs4023-etc.pdf) pour les deux axes de la monture :** 
 ![Moteur pas à pas "low profile" - 17HS4023](17hs4023_stepper.png)
@@ -156,13 +174,13 @@ Pour traiter les instruction, activer les moteurs et lire les capteurs, il nous 
 Cette carte sera programmée en python. On peut y adjoindre des modules pour capter le signal GPS, des modules RTC pour garder l'heure en mémoire même hors tension, qui permettraient d'ajouter des fonctions pratiques pour Starget. La carte dispose également d'un port de communication UART qui permettra de contrôler entre autres choses les moteurs. Il y a également suffisamment d'entrées/sorties pour y brancher les capteurs qui équiperont la monture.
 
 ### 3.3 : La mécanique
-Globalement, hormis un premier [modèle](https://cad.onshape.com/documents/c2a5d542c837fbf3e9a01f71/w/1fb0c1fdcb5c093b99c6adb8/e/1e525a6464b6294251420b4a) issu de ma phase d'exploration, la mécanique n'est pa très avancée. J'ai pu, au cours de cette première phase déterminer que je devrais pouvoir faire tenir le corps de la monture dans un pavé de 10x10x15 cm, ce qui est une bonne base.
+Globalement, hormis un premier [modèle](https://cad.onshape.com/documents/c2a5d542c837fbf3e9a01f71/w/1fb0c1fdcb5c093b99c6adb8/e/1e525a6464b6294251420b4a) issu de ma phase d'exploration, la mécanique n'est pas très avancée. J'ai pu, au cours de cette première phase déterminer que je devrais pouvoir faire tenir le corps de la monture dans un pavé de 10x10x15 cm, ce qui est une bonne base.
 
 Au cours de cette phase, je me suis rendu compte que j'aurai surement besoin d'un réducteur à placer en sortie des moteurs afin d'améliorer leur résolution angulaire, et augmenter le couple. 
 
-Voici le détail de mes calculs. Si vous avez des suggestions, des remarques à apporter vis-à-vis de cette section, je vous invite encore une fois à m'en faire part, que ce soit sur discord d'Eos, LinkedIn,...
+> Voici le détail de mes calculs. Si vous avez des suggestions, des remarques à apporter vis-à-vis de cette section, je vous invite encore une fois à m'en faire part, que ce soit sur discord d'Eos, LinkedIn,...
 
-Prenons le pire des cas : un objectif de 200mm sur un Reflex. Je prends exemple sur mon Canon 40D qui possède un capteur avec des pixels assez gros de 5.71 μm de côté et qui est assez lourd en comparaison des APN modernes. L'ensemble pèse de 1.5 à 2.5kg. Prenons 3.5 kg de charge utile pour être large.
+Prenons un cas limite : un objectif de 200mm sur un Reflex. Je prends exemple sur mon Canon 40D qui possède un capteur avec des pixels assez gros de 5.71 μm de côté et qui est assez lourd en comparaison des APN modernes. L'ensemble pèse de 1.5 à 2.5kg. Prenons 3.5 kg de charge utile pour être large.
 
 Pour estimer mon besoin de précision sur le suivi, voici mon raisonnement :
 - Résolution moteur : 1.8°/step ou 0.9°/step (J'ai acheté des 1.8°/step)
@@ -170,7 +188,11 @@ Pour estimer mon besoin de précision sur le suivi, voici mon raisonnement :
 - Focale : 200 mm ==> Focale effective : 320 mm (Prise en compte du [facteur de crop](https://neelnajaproduction.com/ce-quil-faut-savoir-sur-les-capteurs-et-crops-factors/))
 - Taille pixel : 5.71 μm
 
-[Echantillonnage](https://www.univers-astro.fr/fr/content/6-le-calcul-d-echantillonnage) :  \( e = 206 \times \frac{5.71\ \mu m}{320\ mm} = 3.68"\text{/px} \)
+
+[Echantillonnage](https://www.univers-astro.fr/fr/content/6-le-calcul-d-echantillonnage) :  
+$$
+e = 206 \times \frac{5.71\ \mu m}{320\ mm} = 3.68''\text{/px}
+$$
 
 Un pixel couvre donc 3.68" d'arc dans cette configuration. Je veux que l'angle correspondant à un pas soit plus faible que cette valeur pour pouvoir suivre finement le ciel sans décalage entre les images. Si l'on se base sur le critère de Shannon, on devrait avoir un pas au moins deux fois plus fin que la résolution d'un pixel.
 
@@ -193,7 +215,29 @@ flowchart LR
     style B fill:#b3e5fc,stroke:#0288d1,color:#000000
     style C fill:#c8e6c9,stroke:#388e3c,color:#000000
 ```
-On remarque qu'un rapport de réduction de 120 devrait suffire pour atteindre la performance que je vise.
+
+
+Si l'on reprends la situation considérée sous forme de schéma, voilà ce que ça peut donner sur les deux axes :
+![[schema_telescope_param.svg]]
+On pose:
+- m = 3.5 kg (Charge utile, centre de gravité en G)
+- OG = d ~ 20 cm (hypothèse de l'ordre de grandeur du bras de levier)
+- r = 1:120 (Hypothèse sur l'ordre de grandeur du rapport du réducteur)
+
+Le pire des cas est le couple demandé sur RA lorsque la monture est à l'horizontale et subit pleinement la pesanteur au bout de son bras de levier. On se base sur ce cas là, on prendra les deux moteurs identiques pour le premier prototype.
+
+$$ 
+\begin{matrix}
+C_{RA} = d \times m\times g \\
+C_{mot} = d \times m\times g \times r \\
+AN : \\
+C_{RA} = 6.8 Nm \\
+C_{mot} = 0.057 Nm = 5.7 N.cm
+\end{matrix}
+$$
+D'après sa [documentation](https://www.laskakit.cz/user/related_files/73231_1624__ps_1199sm-17hs4023-etc.pdf), le moteur sélectionner peut développer 14 N.cm de couple, ce qui est bien suffisant pour notre application.
+
+On remarque donc qu'un rapport de réduction de 120 devrait suffire pour atteindre la performance que je vise avec le moteur sélectionné.
 
 > Une question qui se posera notamment lorsque j'aborderai plus en profondeur la partie mécanique de la monture concerne le **backlash**, c'est à dire le jeu dans la transmission de puissance. En effet, un jeu est nécessaire pour permettre l'engrènement entre les différentes parties du réducteur, mais un jeu pourrait potentiellement facilement atteindre la minute d'Arc voire le degré (rappelons que je prévois d'utiliser des moyens de production accessible en Fablab : impression 3D, découpeuse Laser, …). À ce moment, l'erreur induite dépasserait largement cette valeur de quelques secondes et rendrait peut être superflu ce gros rapport de réduction. **Ce sera une partie importante de mon étude des performances mécaniques de ce projet**.
 
@@ -206,7 +250,13 @@ D'après mes recherches, deux solutions s'offrent à moi :
 Pour le coup, la solution à base de vis sans fin semble s'imposer d'elle même : système connu, un coût pas trop élevé, déjà utilisé par d'autres systèmes, …
 Mais encore une fois, je vois dans ce projet l'occasion de tester des choses, de comprendre comment ça marche ( la grande différence entre les deux solutions tient aussi dans mon niveau de compréhension du mécanisme ^^). Or, si il existe des articles scientifiques traitant principalement de design optimal de SRCPG (oui j'abrège, c'est long à écrire) ainsi que des modes propres du système, je n'ai pas trouvé beaucoup de ressources pour le rendre accessible au niveau bidouilleur. On trouve bien quelques vidéos et articles de blog très intéressants, en particulier [cette vidéo](https://www.youtube.com/watch?v=-VtbSvVxaFA) ainsi que le [repo Github](https://github.com/IdeaPropulsionSystems/CoolEpicyclicGearing) qui va avec, notamment parce qu'elle fait partie des ressources qui explique le mieux à la fois le mécanisme et les équations qui le régissent. Ensuite, il y a quelques posts Hackaday comme [celui-ci](https://hackaday.io/project/164732-mprt-modified-planetary-robotics-transmission) ou [celui-là](https://hackaday.io/project/196907-rr1-real-robot-one-revision-2/log/233687-1x-how-to-calculate-the-reduction-ratio-of-split-ring-planetary-gearbox) qui ont retenus mon attention.
 
-**Par conséquent, pour des raisons de curiosité et de volonté d'en comprendre un peu plus sur ce mécanisme qui semble sous-coté, j'ai choisi de l'utiliser pour Starget.**
+>Un article viendra à l'avenir pour expliquer plus en détail le fonctionnement de ce type de réducteur et partager mon implémentation au sein de Starget.
 
+**Par conséquent, pour des raisons de curiosité et de volonté d'en comprendre un peu plus sur ce mécanisme qui semble sous-coté, j'ai choisi de l'utiliser pour le premier prototype de Starget avec un coefficient de réduction de 1:120.** 
+# Conclusion
+Félicitation ! Vous êtes arrivé au bout du pavé, j'ai presque réussi à battre Erwan avec son [dernier article ](https://www.eos-projets.fr/projects/application-flots-partie-1) ^^.
 
-> Un article viendra à l'avenir pour expliquer plus en détail le fonctionnement de ce type de réducteur et partager mon implémentation au sein de Starget
+Nous avons survolé l'ensemble du projet, j'espère que vous aurez bien saisi comment je l'avais organisé. À l'avenir, des nouvelles sur le projet seront postées sur notre serveur Discord, des articles plus spécifique sur le réducteur, ou encore Alpaca verront le jour également. 
+Je serai friand de tout retour et avis, que ce soit sur l'organisation, les outils utilisés, des incohérences de raisonnement…
+
+Merci à la Team Eos qui m'a aidé à améliorer cet article.
