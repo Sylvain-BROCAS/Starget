@@ -5,7 +5,7 @@ Pour mieux comprendre la portée et le contexte du projet, il serait peut-être 
 **Converti à la fabuleuse passion qu'est l'astronomie en arrivant dans mon école, je me suis rapidement tourné vers l'astrophotographie. Le but de mes sessions d'observation nocturne consiste donc à repartir avec une image qui me satisfait**. Au début de l'année 2024, j'étais déjà équipé avec un télescope (Un Arcane N180/1080 pour les connaisseurs), matériel performant mais lourd et encombrant. J'ai donc investit dans une monture plus légère, une [Star Adventurer](http://skywatcher.com/product/star-adventurer/) de chez SkyWatcher. C'est une bonne petite monture, motorisée sur un axe, et fiable… maiiss il me manquait un petit quelque chose.
 
 <p align="center" width="100%">
-    <img width="60%" src="silhouette_nocturne.jpg"><br>
+    <img width="60%" src="assets/silhouette_nocturne.jpg"><br>
 		<i>Votre serviteur sous la constellation d'Orion</i>
 </p>
 
@@ -83,7 +83,7 @@ Pour connecter la monture à l'élément de contrôle, il faut choisir un **prot
 
 
 <p align="center" width="100%">
-    <img width="33%" src="alpaca_logo.png"><br>
+    <img width="33%" src="assets/alpaca_logo.png"><br>
 		<i>Logo du protocole Alpaca</i>
 </p>
 
@@ -169,7 +169,7 @@ Utiliser ce driver assez évolué me permet de m'éliminer beaucoup de travail d
 
 **Pour conclure cette section, j'ai choisis le [moteur suivant](https://www.laskakit.cz/user/related_files/73231_1624__ps_1199sm-17hs4023-etc.pdf) pour les deux axes de la monture :** 
 <p align="center" width="100%">
-	<img width="40%" src="17hs4023_stepper.png">
+	<img width="40%" src="assets/17hs4023_stepper.png">
 </p>
 ### 3.2 : L'unité centrale
 Pour traiter les instruction, activer les moteurs et lire les capteurs, il nous faut un cerveau, une unité de calcul. Pour sa puissance raisonnable, sa faible consommation et très faible encombrement, j'avais démarré ce projet avec un devkit ESP32 programmé en micropython. Cela permettait d'allier ma connaissance en python, la facilité de développement en conservant un support physique minimal. J'avais réussi à écrire un driver capable de se connecter à NINA (rappelez vous, c'est le logiciel de contrôle) sur la base de [ce projet](https://github.com/RunTJoe/MiPyAlpaca). Mais je suis finalement tombé sur les templates d'ASCOM, disponibles en python, mais pas en version micropython. Certaines idées de futures implémentations auxquelles je pense pour un stade bien plus avancé du projet m'ont poussé à me tourner finalement vers un Raspberry Pi. **J'ai choisis le modèle qui semble le plus adapté à mes besoins et mes contraintes : Le [Raspberry Pi Zero 2 W](https://datasheets.raspberrypi.com/rpizero2/raspberry-pi-zero-2-w-product-brief.pdf)**
@@ -221,7 +221,11 @@ flowchart LR
 
 
 Si l'on reprends la situation considérée sous forme de schéma, voilà ce que ça peut donner sur les deux axes :
-![[schema_telescope_param.svg]]
+<p align="center" width="100%">
+	<img width="100%" src="assets/schema_telescope_param.svg
+	">
+</p>
+
 On pose:
 - m = 3.5 kg (Charge utile, centre de gravité en G)
 - OG = d ~ 20 cm (hypothèse de l'ordre de grandeur du bras de levier)
@@ -254,12 +258,12 @@ Pour le coup, la solution à base de vis sans fin semble s'imposer d'elle même 
 Mais encore une fois, je vois dans ce projet l'occasion de tester des choses, de comprendre comment ça marche ( la grande différence entre les deux solutions tient aussi dans mon niveau de compréhension du mécanisme ^^). Or, si il existe des articles scientifiques traitant principalement de design optimal de SRCPG (oui j'abrège, c'est long à écrire) ainsi que des modes propres du système, je n'ai pas trouvé beaucoup de ressources pour le rendre accessible au niveau bidouilleur. On trouve bien quelques vidéos et articles de blog très intéressants, en particulier [cette vidéo](https://www.youtube.com/watch?v=-VtbSvVxaFA) ainsi que le [repo Github](https://github.com/IdeaPropulsionSystems/CoolEpicyclicGearing) qui va avec, notamment parce qu'elle fait partie des ressources qui explique le mieux à la fois le mécanisme et les équations qui le régissent. Ensuite, il y a quelques posts Hackaday comme [celui-ci](https://hackaday.io/project/164732-mprt-modified-planetary-robotics-transmission) ou [celui-là](https://hackaday.io/project/196907-rr1-real-robot-one-revision-2/log/233687-1x-how-to-calculate-the-reduction-ratio-of-split-ring-planetary-gearbox) qui ont retenus mon attention.
 
 <p align="center" width="100%">
-    <img width="40%" src="video_SRCPG_proto_starget-ezgif.com-video-to-gif-converter.gif"><br>
+    <img width="40%" src="assets/video_SRCPG_proto_starget-ezgif.com-video-to-gif-converter.gif"><br>
 		<i>Voici une vidéo du premier prototype de SRCPG que j'ai imprimé au début du projet pour tester le concept</i>
 </p>
 
 <p align="center" width="100%">
-	<img width="40%" src="SRCPG_starget.png"><br>
+	<img width="40%" src="assets/SRCPG_starget.png"><br>
 	<i>Et voici sa modélisation CAO au cours de son élaboration</i>
 </p>
 
