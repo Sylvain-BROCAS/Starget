@@ -269,7 +269,7 @@ Mais encore une fois, je vois dans ce projet l'occasion de tester des choses, de
 # Conclusion
 Félicitation ! Vous êtes arrivé au bout du pavé, j'ai presque réussi à battre Erwan avec son [dernier article ](https://www.eos-projets.fr/projects/application-flots-partie-1) ^^.
 
-Nous avons survolé l'ensemble du projet, j'espère que vous aurez bien saisi comment je l'avais organisé. À l'avenir, des nouvelles sur le projet seront postées sur notre serveur Discord, des articles plus spécifique sur le réducteur, ou encore Alpaca verront le jour également. 
+Nous avons survolé l'ensemble du projet, j'espère que vous aurez bien saisi comment je l'avais organisé. À l'avenir, des nouvelles sur le projet seront postées sur notre [serveur discord](https://discord.com/invite/339KvZDSf7). Des articles plus spécifiques sur le réducteur ou encore Alpaca verront le jour également. 
 Je serai friand de tout retour et avis, que ce soit sur l'organisation, les outils utilisés, des incohérences de raisonnement…
 
 Merci à la Team Eos qui m'a aidé à améliorer cet article.
