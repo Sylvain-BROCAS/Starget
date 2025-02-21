@@ -137,4 +137,4 @@ templates/*.py
 lib/
 .micropico
 ~$Starget.pptx
-alpyca.log.[0-9]*
+alpyca.log.*

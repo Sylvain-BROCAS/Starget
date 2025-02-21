@@ -1,7 +1,7 @@
 from threading import Timer, Lock
 
 from serial import protocol_handler_packages
-from device.telescope_enum import AlignmentModes
+from telescope_enum import AlignmentModes
 from telescope_enum import *
 from utilities import *
 from logging import Logger

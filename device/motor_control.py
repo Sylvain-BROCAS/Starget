@@ -1,6 +1,5 @@
 import serial
 import struct
-from templates import switch
 import time
 from typing import Callable
 from utilities import is_RA_homed
