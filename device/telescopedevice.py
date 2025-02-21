@@ -10,6 +10,7 @@ from config import Config
 from datetime import datetime
 import asyncio
 from typing import Coroutine, Any
+from astropy.time import Time as astropyTime
 
 class TelescopeDevice:
     def __init__(self, logger:Logger):
@@ -25,7 +26,6 @@ class TelescopeDevice:
         self.steps_rotation = 200 # steps per degree of the motor
         self.max_rpm: int = 10000 # maximum rotational speed in revolutions per minute
         self.microstepping = 32 # miccrostepping division factor
-
         # --------------------------- Telescope parameters --------------------------- #
         # Example, adjust as needed
         self._alignment_mode: AlignmentModes = AlignmentModes(Config.alignment_mode)
@@ -78,7 +78,6 @@ class TelescopeDevice:
         self._is_tracking: bool = False
         self._is_pulse_guiding: bool = False
         self._is_moving: bool = False
-        self._stopped: bool = True
         self._parked: bool = True
         self._slewing: bool = False
 
@@ -94,8 +93,8 @@ class TelescopeDevice:
         self._local_sidereal_time: float = 0.0
 
         # ----------------------------------- Setup ---------------------------------- #
-        self._RA_motor = MKSMotor(is_RA_homed, "")
-        self._DEC_motor = MKSMotor(is_DEC_homed, "")
+        self._RA_motor = MKSMotor(is_RA_homed, "e0")
+        self._DEC_motor = MKSMotor(is_DEC_homed, "e1")
 
     # ---------------------------------------------------------------------------- #
     #                                  Properties                                  #
@@ -671,20 +670,28 @@ class TelescopeDevice:
         self._connlock.release()
     # --------------------------- Slew related methods --------------------------- #
     # Utilities
-    async def MoveAxis(self, axis, rate: float) -> None:
+    async def MoveAxis(self, axis:int, rate:float) -> None:
+        if rate>0:
+            dir = "CW"
+        else:
+            dir = "CCW"
+
+        self._is_moving = True
+        self._at_home = False
+        self._at_park = False
         if axis == 'RA':
-            await self._RA_motor.move_constant_speed(rate)
+            await self._RA_motor.move_constant_speed(dir, abs(rate))
         elif axis == 'DEC':
-            await self._DEC_motor.move_constant_speed(rate)
+            await self._DEC_motor.move_constant_speed(dir, abs(rate))
 
     async def Park(self) -> None:
         self.logger.info("Parking telescope...")
-        self._RA_motor.speed = 1000
-        self._DEC_motor.speed = 1000
-        tasks = [self._RA_motor.move_to_zero_position,
-            self._DEC_motor.move_to_zero_position
+        self._is_moving = True
+        tasks = [self._RA_motor.return_to_zero,
+            self._DEC_motor.return_to_zero
         ]
         await asyncio.gather(*tasks)
+        self._is_moving = False
         self._at_park = True
         self.logger.info("Telescope parked.")
     
@@ -704,7 +711,7 @@ class TelescopeDevice:
     async def _find_home_dec(self):
         await asyncio.to_thread(self._DEC_motor.find_home)
 
-    async def AbortSlew(self):
+    def AbortSlew(self):
         self.logger.info("Aborting slew...")
         self._RA_motor.stop()
         self._DEC_motor.stop()
@@ -760,8 +767,7 @@ class TelescopeDevice:
         pass
 
     # ---------------------- Telescope parameters related methods --------------------- #
-
-    def CanMoveAxis(self, Axis:int) -> bool:# TODO : Not complete
+    def CanMoveAxis(self, Axis:int) -> bool:# NOTE : Can always move each axis
         """
         Indicates whether the telescope can move the requested axis.
 
@@ -786,7 +792,7 @@ class TelescopeDevice:
         self._parked = False
 
 
-    def SyncToCoordinates(self, RightAscension:float, Declination:float) -> None:# TODO
+    def SyncToCoordinates(self, RightAscension:float, Declination:float) -> None:
         """
         Syncs the telescope to the specified equatorial coordinates.
 
@@ -799,7 +805,7 @@ class TelescopeDevice:
         self._RA:float = RightAscension
         self._DEC:float = Declination
 
-    def SyncToAltAz(self, Altitude: float, Azimuth: float) -> None:# TODO : Not implemented yet
+    def SyncToAltAz(self, Altitude: float, Azimuth: float) -> None:# TODO : change time source
         """
         Syncs the telescope to the specified altitude and azimuth coordinates.
         
@@ -809,17 +815,19 @@ class TelescopeDevice:
             Altitude (float): The altitude coordinate to sync to, in degrees.
             Azimuth (float): The azimuth coordinate to sync to, in degrees.
         """
-        pass
-        # TODO : Update telescope position
+        RA, DEC = convert_altaz_to_eq(Altitude, Azimuth, self._site_latitude, self._site_longitude, self._site_elevation, Time.now())
+        self._RA = RA
+        self._DEC = DEC
 
-    def SyncToTarget(self) -> None:# TODO : Not implemented yet
+    def SyncToTarget(self) -> None:
         """
         Syncs the telescope to the current target.
         
         This method instructs the telescope to point at the current target.
         """
         # Implement logic to sync to target
-        pass
+        self._RA = self._target_ra
+        self._DEC = self._target_dec
 
     # --------------------------------- Utilities -------------------------------- #
     

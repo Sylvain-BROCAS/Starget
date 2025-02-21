@@ -49,7 +49,7 @@ from logging import Logger
 # For each *type* of device served
 from telescope import TelescopeMetadata
 
-logger: Logger = None
+logger: Logger
 #logger = None                   # Safe on Python 3.7 but no intellisense in VSCode etc.
 
 def set_management_logger(lgr):

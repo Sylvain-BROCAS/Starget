@@ -1682,7 +1682,7 @@ class slewsettletime:
                                        DriverException(0x500, 'Telescope.Slewsettletime failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev))# TODO : implement slew (coords conversion and slew)
+@before(PreProcessRequest(maxdev))# 
 class slewtoaltaz:
 
     def on_put(self, req: Request, resp: Response, devnum: int):

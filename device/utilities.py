@@ -1,3 +1,7 @@
+from astropy.coordinates import AltAz, FK5, EarthLocation
+from astropy.units import m, deg # type: ignore
+from astropy.time import Time
+
 def read_pos_RA():
     # Implementation for reading RA position
     # NOTE range 0:+23.9999999999 hours
@@ -25,3 +29,16 @@ def is_RA_homed() -> bool:
 
 def is_DEC_homed() -> bool:
     return True
+
+def convert_altaz_to_eq(alt, az, latitude, longitude, elevation, time):
+    # Définir la position du site
+    location = EarthLocation(lat=latitude*deg, lon=longitude*deg, height=elevation*m)
+    
+    # Définir les coordonnées AltAz
+    altaz = AltAz(alt=alt*deg, az=az*deg, location=location, obstime=time)
+    
+    # Convertir en équatorial
+    equatorial = altaz.transform_to(FK5)
+    
+    # Retourner les valeurs RA et Dec
+    return equatorial.ra.hour, equatorial.dec.degree
