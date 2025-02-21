@@ -8,7 +8,7 @@
 2025-02-03T02:00:22.212 INFO 127.0.0.1 <- [{'DeviceName': 'Starget', 'DeviceType': 'Telescope', 'DeviceNumber': 0, 'UniqueID': '2e03994e-dbca-44ca-a988-9e3b8c681d6a'}]
 2025-02-03T02:00:26.500 INFO Disc rcv alpacadiscovery1 from ('127.0.0.1', 54841)
 2025-02-03T02:00:27.518 INFO 127.0.0.1 <- [1]
-2025-02-03T02:00:27.541 INFO 127.0.0.1 <- {'ServerName': 'Starget Mount', 'Manufacturer': 'Sylvain BROCAS', 'Version': '0.0', 'Location': 'Anywhere on Earth'}
+2025-02-03T02:00:27.541 INFO 127.0.0.1 <- {'ServerName': 'Starget Mounjh vjht', 'Manufacturer': 'Sylvain BROCAS', 'Version': '0.0', 'Location': 'Anywhere on Earth'}
 2025-02-03T02:00:27.580 INFO 127.0.0.1 <- [{'DeviceName': 'Starget', 'DeviceType': 'Telescope', 'DeviceNumber': 0, 'UniqueID': '2e03994e-dbca-44ca-a988-9e3b8c681d6a'}]
 2025-02-03T02:00:42.748 INFO Disc rcv alpacadiscovery1 from ('127.0.0.1', 54073)
 2025-02-03T02:00:42.758 INFO 127.0.0.1 <- [1]
@@ -2323,10 +2323,10 @@ TypeError: unsupported operand type(s) for -: 'NoneType' and 'float'
 2025-02-03T02:01:03.698 ERROR Request has bad Alpaca ClientTransactionID value qweqwe
 2025-02-03T02:01:03.714 INFO 127.0.0.1 -> PUT /api/v1/telescope/0/moveaxis
 2025-02-03T02:01:03.716 INFO 127.0.0.1 -> {'ClientID': '123456', 'ClientTransactionID': '67890', 'Axis': '0', 'Rate': '0.0'}
-2025-02-03T02:01:03.717 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0°/s].
+2025-02-03T02:01:03.717 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0ï¿½/s].
 2025-02-03T02:01:03.728 INFO 127.0.0.1 -> PUT /api/v1/telescope/0/moveaxis
 2025-02-03T02:01:03.728 INFO 127.0.0.1 -> {'ClientID': '123456', 'ClientTransactionID': '67890', 'ExtraParameter': 'ExtraValue', 'Axis': '0', 'Rate': '0.0'}
-2025-02-03T02:01:03.728 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0°/s].
+2025-02-03T02:01:03.728 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0ï¿½/s].
 2025-02-03T02:01:03.746 INFO 127.0.0.1 -> PUT /api/v1/telescope/0/moveaxis
 2025-02-03T02:01:03.746 INFO 127.0.0.1 -> {'ClientID': '123456', 'ClientTransactionID': '67890', 'Axis': 'asduio6fghZZ', 'Rate': '0.0'}
 2025-02-03T02:01:03.748 ERROR InvalidValueException: Axis asduio6fghZZ not a valid integer.
@@ -2339,10 +2339,10 @@ TypeError: unsupported operand type(s) for -: 'NoneType' and 'float'
 2025-02-03T02:01:03.778 INFO 127.0.0.1 -> {'ClientID': '123456', 'ClientTransactionID': '67890', 'Axis': '0', 'rATE': '0.0'}
 2025-02-03T02:01:03.796 INFO 127.0.0.1 -> PUT /api/v1/telescope/0/moveaxis
 2025-02-03T02:01:03.798 INFO 127.0.0.1 -> {'clientid': '123456', 'ClientTransactionID': '67890', 'Axis': '0', 'Rate': '0.0'}
-2025-02-03T02:01:03.798 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0°/s].
+2025-02-03T02:01:03.798 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0ï¿½/s].
 2025-02-03T02:01:03.815 INFO 127.0.0.1 -> PUT /api/v1/telescope/0/moveaxis
 2025-02-03T02:01:03.815 INFO 127.0.0.1 -> {'ClientID': '123456', 'clienttransactionid': '67890', 'Axis': '0', 'Rate': '0.0'}
-2025-02-03T02:01:03.817 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0°/s].
+2025-02-03T02:01:03.817 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0ï¿½/s].
 2025-02-03T02:01:03.835 INFO 127.0.0.1 -> PUT /api/v1/telescope/0/moveaxis
 2025-02-03T02:01:03.838 INFO 127.0.0.1 -> {'ClientID': '', 'ClientTransactionID': '67890', 'Axis': '0', 'Rate': '0.0'}
 2025-02-03T02:01:03.838 ERROR Request has bad Alpaca ClientID value 
@@ -5208,10 +5208,10 @@ TypeError: unsupported operand type(s) for -: 'NoneType' and 'float'
 2025-02-03T02:01:31.755 ERROR Request has bad Alpaca ClientTransactionID value qweqwe
 2025-02-03T02:01:31.758 INFO 127.0.0.1 -> PUT /api/v1/telescope/0/moveaxis
 2025-02-03T02:01:31.758 INFO 127.0.0.1 -> {'ClientID': '123456', 'ClientTransactionID': '67890', 'Axis': '0', 'Rate': '0.0'}
-2025-02-03T02:01:31.766 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0°/s].
+2025-02-03T02:01:31.766 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0ï¿½/s].
 2025-02-03T02:01:31.768 INFO 127.0.0.1 -> PUT /api/v1/telescope/0/moveaxis
 2025-02-03T02:01:31.768 INFO 127.0.0.1 -> {'ClientID': '123456', 'ClientTransactionID': '67890', 'ExtraParameter': 'ExtraValue', 'Axis': '0', 'Rate': '0.0'}
-2025-02-03T02:01:31.774 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0°/s].
+2025-02-03T02:01:31.774 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0ï¿½/s].
 2025-02-03T02:01:31.788 INFO 127.0.0.1 -> PUT /api/v1/telescope/0/moveaxis
 2025-02-03T02:01:31.788 INFO 127.0.0.1 -> {'ClientID': '123456', 'ClientTransactionID': '67890', 'Axis': 'asduio6fghZZ', 'Rate': '0.0'}
 2025-02-03T02:01:31.788 ERROR InvalidValueException: Axis asduio6fghZZ not a valid integer.
@@ -5224,10 +5224,10 @@ TypeError: unsupported operand type(s) for -: 'NoneType' and 'float'
 2025-02-03T02:01:31.823 INFO 127.0.0.1 -> {'ClientID': '123456', 'ClientTransactionID': '67890', 'Axis': '0', 'rATE': '0.0'}
 2025-02-03T02:01:31.833 INFO 127.0.0.1 -> PUT /api/v1/telescope/0/moveaxis
 2025-02-03T02:01:31.834 INFO 127.0.0.1 -> {'clientid': '123456', 'ClientTransactionID': '67890', 'Axis': '0', 'Rate': '0.0'}
-2025-02-03T02:01:31.834 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0°/s].
+2025-02-03T02:01:31.834 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0ï¿½/s].
 2025-02-03T02:01:31.838 INFO 127.0.0.1 -> PUT /api/v1/telescope/0/moveaxis
 2025-02-03T02:01:31.838 INFO 127.0.0.1 -> {'ClientID': '123456', 'clienttransactionid': '67890', 'Axis': '0', 'Rate': '0.0'}
-2025-02-03T02:01:31.842 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0°/s].
+2025-02-03T02:01:31.842 ERROR InvalidValueException: Rate 0.0 is outside the range [6000.0, 0.0ï¿½/s].
 2025-02-03T02:01:31.853 INFO 127.0.0.1 -> PUT /api/v1/telescope/0/moveaxis
 2025-02-03T02:01:31.853 INFO 127.0.0.1 -> {'ClientID': '', 'ClientTransactionID': '67890', 'Axis': '0', 'Rate': '0.0'}
 2025-02-03T02:01:31.858 ERROR Request has bad Alpaca ClientID value 
