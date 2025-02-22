@@ -1,0 +1,187 @@
+{
+  "main": {
+    "id": "b5ff14dd75d6a515",
+    "type": "split",
+    "children": [
+      {
+        "id": "9d269c99127e99a5",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "186dc89cd5c25292",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "pres_projet.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "pres_projet"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "32a01d49c22ac4c7",
+    "type": "split",
+    "children": [
+      {
+        "id": "1f843f3ac1e865c9",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c7431a4e438b8d8d",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "29bcb86e3f98e0ee",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "ce6bfe4b1797052d",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "b7fcd3d1c7bd4015",
+    "type": "split",
+    "children": [
+      {
+        "id": "179bbed888824467",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "aff1eb3d4f9d9be5",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "pres_projet.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for pres_projet"
+            }
+          },
+          {
+            "id": "043b82781c0dd409",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "pres_projet.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from pres_projet"
+            }
+          },
+          {
+            "id": "e5f344347586ad97",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "e4b53534323a016f",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "pres_projet.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of pres_projet"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "186dc89cd5c25292",
+  "lastOpenFiles": [
+    "assets/alpaca_logo.png",
+    "assets/schema_telescope_param.svg",
+    "assets/17hs4023_stepper.png",
+    "assets/silhouette_nocturne.jpg",
+    "assets/SRCPG_starget.png",
+    "assets/video_SRCPG_proto_starget.mp4",
+    "assets/video_SRCPG_proto_starget-ezgif.com-video-to-gif-converter.gif",
+    "pres_projet.md",
+    "Pasted image 20250220121742.png",
+    "assets",
+    "schema_telescope_param (2).svg",
+    "Untitled-2025-01-13-0911(1).svg",
+    "Untitled.png"
+  ]
+}

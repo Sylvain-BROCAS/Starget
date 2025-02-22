@@ -1,0 +1,59 @@
+title = "Alpaca Mount Driver (Telescope)"
+
+[network]
+ip_address = '127.0.0.1'             # Any address
+port = 5555
+
+[server]
+location = 'Anywhere on Earth'  # Anything you want here
+verbose_driver_exceptions = "True"
+
+[device]
+step_size = 1.8 # [°]
+steps_per_sec = 6 # [stp/s]
+sync_write_connected = "True"     # "True" to emulate sync Connected = "True" (for Conform)
+alignment_mode = 1 # Polar
+aperture_area = 0 # [m²]
+aperture_diameter = 0 # [m]
+focal_length = 0 # [m]
+
+equatorial_system = 2 # J2000
+
+slew_settle_time = 1 # [s]
+tracking_rates = [123]
+axis_rates = [6000.0, 0.0] # [°/s]
+site_elevation = 0 # [m]
+site_latitude = 0 # [°] in [-90°, +90°]
+site_longitude = 0 # [°] in [-180°, +180°]
+
+# Can properties
+does_refraction = "False"
+can_find_home = "True"
+can_park = "True"
+can_unpark= "True" 
+can_set_park = "False"
+park_pos = [0,0]
+can_set_DEC = "True"
+can_set_RA = "True"          
+can_set_DEC_rate = "False"
+can_set_RA_rate= "False"
+can_move_axis = "True"
+can_slew = "True"
+can_slew_async = "False"
+can_slew_AltAz = "False"
+can_slew_AltAz_async = "False"
+can_set_tracking = "True"
+can_set_sidereal_rate = "True"
+can_pulse_guide = "False"
+can_set_guide_rates = "False"
+can_sync = "True"
+can_sync_AltAz = "False"
+can_sync_to_target = "True"
+
+can_set_pier_side = "False"
+
+[logging]
+log_level = 'INFO'
+log_to_stdout = "False"
+max_size_mb = 5
+num_keep_logs = 10
