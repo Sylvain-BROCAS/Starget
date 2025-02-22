@@ -241,7 +241,7 @@ class TelescopeDevice:
         self._lock.release()
         return res
 
-    @property
+    @property # NOTE : Useful ???
     def StepSize(self) -> float:
         self._lock.acquire()
         res: float = self._step_size
@@ -254,7 +254,7 @@ class TelescopeDevice:
         self._lock.release()
         self.logger.debug(f'[Step size] {str(step_size)}')
 
-    @property
+    @property # NOTE : Useful ???
     def StepPerSec(self) -> float:
         self._lock.acquire()
         res: float = self._steps_per_sec
@@ -413,15 +413,21 @@ class TelescopeDevice:
         return res
     # ----------------------------- Telescope status ----------------------------- #
     @property
-    def Altitude(self) -> float: # TODO: Convert to actual altitude
-        # Implementation here
-        return 0
+    def Altitude(self) -> float:
+        elevation = self.SiteElevation
+        latitude = self.SiteLatitude
+        longitude = self.SiteLongitude
+        time = astropyTime.now()
+        return convert_eq_to_altaz(self.RA, self.DEC, latitude, longitude, elevation, time)[0]
 
     @property
-    def Azimuth(self) -> float: # TODO: Convert to actual azimuth
-        # Implementation here
-        return 0
-
+    def Azimuth(self) -> float:
+        elevation = self.SiteElevation
+        latitude = self.SiteLatitude
+        longitude = self.SiteLongitude
+        time = astropyTime.now()
+        return convert_eq_to_altaz(self.RA, self.DEC, latitude, longitude, elevation, time)[1]
+    
     @property
     def RA(self) -> float:
         self._lock.acquire()
@@ -604,7 +610,7 @@ class TelescopeDevice:
     @property
     def SiderealTime(self) -> float:
         self._lock.acquire()
-        res = self._local_sidereal_time
+        res = get_local_sidereal_time(self.SiteLatitude, self.SiteLongitude, self.SiteElevation)
         self._lock.release()
         return res
     @SiderealTime.setter
@@ -617,7 +623,7 @@ class TelescopeDevice:
     @property
     def UTCDate(self):
         self._lock.acquire()
-        res = self._utc_date
+        res = get_UTC_date()
         self._lock.release()
         return res
     @UTCDate.setter

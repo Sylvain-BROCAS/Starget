@@ -911,7 +911,7 @@ class destinationsideofpier:
                                          DriverException(0x500, 'Telescope.Destinationsideofpier failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev))  # TODO : implement put | Yet : retruns NotImplementedException
+@before(PreProcessRequest(maxdev))  # TODO : implement put | Yet : returns NotImplementedException
 class doesrefraction:
 
     def on_get(self, req: Request, resp: Response, devnum: int):
@@ -976,7 +976,7 @@ class equatorialsystem:
                                          DriverException(0x500, 'Telescope.Equatorialsystem failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev)) # TODO : in FindHome() : stop slewing and tracking
+@before(PreProcessRequest(maxdev))
 class findhome:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -987,6 +987,10 @@ class findhome:
 
         try:
             # -----------------------------
+            if tel_dev.AtPark:
+                resp.text = MethodResponse(req,
+                                       ParkedException("Can't move axis while parked")).json
+                return
             if tel_dev.CanFindHome:  # Find home ONLY if allowed
                 tel_dev.FindHome()
                 resp.text = MethodResponse(req).json
@@ -1160,7 +1164,7 @@ class ispulseguiding:
                                          DriverException(0x500, 'Telescope.Ispulseguiding failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev))  # TODO : implement get and put methods
+@before(PreProcessRequest(maxdev))
 class moveaxis:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -1198,6 +1202,12 @@ class moveaxis:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'Rate {ratestr} not a valid number.')).json
             return
+        
+        if tel_dev.AtPark:
+            resp.text = MethodResponse(req,
+                                       ParkedException("Can't move axis while parked")).json
+            return
+        
         # Check rate value validity
         valid_rates = tel_dev.AxisRates
         if not valid_rates[0] <= rate <= valid_rates[1]:
@@ -1220,7 +1230,7 @@ class moveaxis:
                                        DriverException(0x500, 'Telescope.Moveaxis failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev)) # TODO in function : stop slewing, change tracking state etc
+@before(PreProcessRequest(maxdev))
 class park:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -1370,7 +1380,7 @@ class rightascensionrate:
                                        DriverException(0x500, 'Telescope.Rightascensionrate failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev))  # TODO : Guiding not implemented | Yet: returns NotImplementedException
+@before(PreProcessRequest(maxdev))  # TODO : set park not implemented | Yet: returns NotImplementedException
 class setpark:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -1690,9 +1700,6 @@ class slewtoaltaz:
             resp.text = PropertyResponse(None, req,
                                          NotConnectedException()).json
             return
-
-        resp.text = MethodResponse(req, NotImplementedException()).json
-        return
     
         # Raises 400 bad request if missing
         azimuthstr: str = get_request_field('Azimuth', req)
@@ -1711,7 +1718,11 @@ class slewtoaltaz:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'Altitude {altitudestr} not a valid number.')).json
             return
-        # RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
+        if tel_dev.AtPark:
+                resp.text = MethodResponse(req,
+                                       ParkedException("Can't move axis while parked")).json
+                return
+
         try:
             # -----------------------------
             tel_dev.SlewToAltAz(azimuth, altitude)
@@ -1722,8 +1733,7 @@ class slewtoaltaz:
                                        DriverException(0x500, 'Telescope.Slewtoaltaz failed', ex)).json
 
 
-
-@before(PreProcessRequest(maxdev)) # TODO : implement slew (coords conversion and slew)
+@before(PreProcessRequest(maxdev))
 class slewtoaltazasync:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -1731,11 +1741,9 @@ class slewtoaltazasync:
             resp.text = PropertyResponse(None, req,
                                          NotConnectedException()).json
             return
-        resp.text = MethodResponse(req, NotImplementedException()).json
-        return
     
         # Raises 400 bad request if missing
-        azimuthstr = get_request_field('Azimuth', req)
+        azimuthstr: str = get_request_field('Azimuth', req)
         try:
             azimuth = float(azimuthstr)
         except:
@@ -1744,26 +1752,29 @@ class slewtoaltazasync:
             return
         # RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         # Raises 400 bad request if missing
-        altitudestr = get_request_field('Altitude', req)
+        altitudestr: str = get_request_field('Altitude', req)
         try:
             altitude = float(altitudestr)
         except:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'Altitude {altitudestr} not a valid number.')).json
             return
-        # RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
+        if tel_dev.AtPark:
+                resp.text = MethodResponse(req,
+                                       ParkedException("Can't move axis while parked")).json
+                return
+
         try:
             # -----------------------------
-            tel_dev.SlewToAltAzAsync(azimuth, altitude)
+            tel_dev.SlewToAltAz(azimuth, altitude)
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
-                                       DriverException(0x500, 'Telescope.Slewtoaltazasync failed', ex)).json
+                                       DriverException(0x500, 'Telescope.Slewtoaltaz failed', ex)).json
 
 
-
-@before(PreProcessRequest(maxdev)) # TODO : implement slew (coords conversion and slew)
+@before(PreProcessRequest(maxdev))
 class slewtocoordinates:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -1789,7 +1800,11 @@ class slewtocoordinates:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'Declination {declinationstr} not a valid number.')).json
             return
-        # RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
+        
+        if tel_dev.AtPark:
+            resp.text = MethodResponse(req,
+                                    ParkedException("Can't move axis while parked")).json
+            return
         try:
             # -----------------------------
             tel_dev.SlewToCoordinates(rightascension, declination)
@@ -1800,7 +1815,7 @@ class slewtocoordinates:
                                        DriverException(0x500, 'Telescope.Slewtocoordinates failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev)) # TODO : implement slew (slew)
+@before(PreProcessRequest(maxdev))
 class slewtocoordinatesasync:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -1826,18 +1841,22 @@ class slewtocoordinatesasync:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'Declination {declinationstr} not a valid number.')).json
             return
-        # RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
+        
+        if tel_dev.AtPark:
+            resp.text = MethodResponse(req,
+                                    ParkedException("Can't move axis while parked")).json
+            return
         try:
             # -----------------------------
-            tel_dev.SlewToCoordinatesAsync(rightascension, declination)
+            tel_dev.SlewToCoordinates(rightascension, declination)
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
-                                       DriverException(0x500, 'Telescope.Slewtocoordinatesasync failed', ex)).json
+                                       DriverException(0x500, 'Telescope.Slewtocoordinates failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev)) # TODO : implement slew (slew)
+@before(PreProcessRequest(maxdev))
 class slewtotarget:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -1845,11 +1864,14 @@ class slewtotarget:
             resp.text = PropertyResponse(None, req,
                                          NotConnectedException()).json
             return
-        resp.text = MethodResponse(req, NotImplementedException()).json
-        return
     
         try:
             # -----------------------------
+            if tel_dev.AtPark:
+                resp.text = MethodResponse(req,
+                                       ParkedException("Can't move axis while parked")).json
+                return
+            
             tel_dev.SlewToTarget()
             # -----------------------------
             resp.text = MethodResponse(req).json
@@ -1858,7 +1880,7 @@ class slewtotarget:
                                        DriverException(0x500, 'Telescope.Slewtotarget failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev)) # TODO : implement slew (slew)
+@before(PreProcessRequest(maxdev))
 class slewtotargetasync:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -1866,19 +1888,23 @@ class slewtotargetasync:
             resp.text = PropertyResponse(None, req,
                                          NotConnectedException()).json
             return
-        resp.text = MethodResponse(req, NotImplementedException()).json
-        return
+    
         try:
             # -----------------------------
-            tel_dev.SlewToTargetAsync()
+            if tel_dev.AtPark:
+                resp.text = MethodResponse(req,
+                                       ParkedException("Can't move axis while parked")).json
+                return
+            
+            tel_dev.SlewToTarget()
             # -----------------------------
             resp.text = MethodResponse(req).json
         except Exception as ex:
             resp.text = MethodResponse(req,
-                                       DriverException(0x500, 'Telescope.Slewtotargetasync failed', ex)).json
+                                       DriverException(0x500, 'Telescope.Slewtotarget failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev)) # TODO : Not implemented yet
+@before(PreProcessRequest(maxdev))
 class synctoaltaz:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -1887,9 +1913,6 @@ class synctoaltaz:
                                          NotConnectedException()).json
             return
 
-        resp.text = MethodResponse(req, NotImplementedException()).json
-        return
-    
         azimuthstr: str = get_request_field('Azimuth', req)
         # Raises 400 bad request if missing
         if azimuthstr is None or azimuthstr == '':
@@ -1902,7 +1925,7 @@ class synctoaltaz:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'Azimuth {azimuthstr} not a valid number.')).json
             return
-        if not (-180 <= azimuth <= 180):
+        if not (-180 <= azimuth <= 180): # NOTE Check if azimuth is in the range [-180, 180]
             resp.text = MethodResponse(req,
                                            InvalidValueException(f'Azimuth {azimuth} is out of range (-180, 180)')).json
             return
@@ -1919,7 +1942,7 @@ class synctoaltaz:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'Altitude {altitudestr} not a valid number.')).json
             return
-        if not (0 <= altitude <= 90):
+        if not (0 <= altitude <= 90): # NOTE Check if altitude is in the range [0, 90]
             resp.text = MethodResponse(req,
                                            InvalidValueException(f'Altitude {altitude} is out of range (-90, 90)')).json
             return
@@ -1960,7 +1983,7 @@ class synctocoordinates:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'RightAscension {rightascensionstr} not a valid number.')).json
             return
-        if not (0 <= rightascension <= 23.999999):
+        if not (0 <= rightascension <= 23.999999): # NOTE Check if right ascension is in the range [0, 24)
             resp.text = MethodResponse(req,
                                            InvalidValueException(f'RightAscension {rightascension} is out of range (0, 24)')).json
             return
@@ -1977,7 +2000,7 @@ class synctocoordinates:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'Declination {declinationstr} not a valid number.')).json
             return
-        if not (-90 <= declination <= 90):
+        if not (-90 <= declination <= 90): # NOTE Check if declination is in the range [-90, 90]
             resp.text = MethodResponse(req,
                                            InvalidValueException(f'Declination {declination} is out of range (-90, 90)')).json
             return
@@ -1996,7 +2019,7 @@ class synctocoordinates:
                                        DriverException(0x500, 'Telescope.Synctocoordinates failed', ex)).json
 
 
-@before(PreProcessRequest(maxdev)) # TODO : Not implemented yet
+@before(PreProcessRequest(maxdev))
 class synctotarget:
 
     def on_put(self, req: Request, resp: Response, devnum: int):
@@ -2004,8 +2027,6 @@ class synctotarget:
             resp.text = PropertyResponse(None, req,
                                          NotConnectedException()).json
             return
-        resp.text = MethodResponse(req, NotImplementedException()).json
-        return
     
         try:
             # -----------------------------
@@ -2159,8 +2180,12 @@ class tracking:
 
         try:
             # -----------------------------
+            if tel_dev.AtPark:
+                resp.text = MethodResponse(req,
+                                           ParkedException("Can't move axis while parked")).json
+                return
             if tel_dev.CanSetTracking:
-                tel_dev.Tracking = tracking  # TODO: Implement tracking control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Tracking = True if tracking else False  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement tracking control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Tracking = True if tracking else False  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement tracking control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Tracking = True if tracking else False  # Note: This is a placeholder, actual implementation may vary.  # TODO: Implement tracking control. Raise Alpaca InvalidValueException if not supported by the telescope.  # Example: tel_dev.Tracking = True if tracking
+                tel_dev.Tracking = tracking 
                 resp.text = MethodResponse(req).json
             else:
                 resp.text = MethodResponse(req,
@@ -2271,7 +2296,6 @@ class utcdate:
             resp.text = MethodResponse(req,
                                            DriverException(0x400, 'UTCDate is required')).json
             return
-        #! INTEPRET AS NEEDED OR FAIL ###  # Raise Alpaca InvalidValueException with details!
         try:
             # -----------------------------
             tel_dev.UTCDate = utcdate
@@ -2294,6 +2318,10 @@ class unpark:
         try:
             # -----------------------------
             if tel_dev.CanUnpark:
+                if not tel_dev.AtPark:
+                    resp.text = MethodResponse(req,
+                                           InvalidOperationException("Telescope is not parked")).json
+                    return
                 tel_dev.Unpark()  
                 resp.text = MethodResponse(req).json
             else:

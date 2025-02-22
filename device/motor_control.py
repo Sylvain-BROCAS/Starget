@@ -14,7 +14,7 @@ class MKSMotor:
         # GPIO.setwarnings(False)
         
         # For Serial
-        self.ser = serial.Serial(port, baudrate, timeout=timeout)
+        self.ser = None #serial.Serial(port, baudrate, timeout=timeout)
         self.adress = int(adress, 16)
         self._speed = 0
         self.check_home = check_home
