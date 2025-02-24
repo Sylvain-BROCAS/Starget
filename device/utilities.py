@@ -1,5 +1,6 @@
 from astropy.coordinates import AltAz, FK5, EarthLocation
-from astropy.units import m, deg, hourangle # type: ignore
+from astropy.coordinates.angles.core import Longitude
+from astropy.units import m, deg, hourangle, hour # type: ignore
 from astropy.time import Time
 
 def read_pos_RA():
@@ -13,7 +14,7 @@ def read_pos_Dec():
     pass
 
 
-def get_local_sidereal_time(latitude, longitude, height=0):
+def get_local_sidereal_time(latitude:float, longitude:float, height:float):
     """
     Récupère le Local Sidereal Time pour une position donnée
     
@@ -32,10 +33,10 @@ def get_local_sidereal_time(latitude, longitude, height=0):
     # Récupération du temps GPS actuel
     current_time = Time.now()
     
-    # Calcul du LST
-    lst = current_time.sidereal_time('mean', longitude=location.lon)
-    
-    return lst
+    # Calcul du Local Apparent Sidereal Time
+    last: Longitude = current_time.sidereal_time('apparent', longitude=location.lon)
+    last_hour:float = last.to_value(hour) # type: ignore
+    return last_hour
 
 def get_UTC_date():
     """The UTC date/time of the telescope's internal clock in ISO 8601 format including 
@@ -44,8 +45,6 @@ def get_UTC_date():
     2016-11-14T07:03:08.1234567Z. 
     Please note the compulsary trailing Z indicating the 'Zulu', UTC time zone."""
     return "2016-03-04T17:45:31.1234567Z"
-def move_to_pos(motor, position):
-    pass
 
 def is_RA_homed() -> bool:
     return False
@@ -53,7 +52,7 @@ def is_RA_homed() -> bool:
 def is_DEC_homed() -> bool:
     return True
 
-def convert_altaz_to_eq(alt, az, latitude, longitude, elevation, time):
+def convert_altaz_to_eq(alt:float, az:float, latitude:float, longitude:float, elevation:float, time):
     # Définir la position du site
     location = EarthLocation(lat=latitude*deg, lon=longitude*deg, height=elevation*m)
     
@@ -66,7 +65,7 @@ def convert_altaz_to_eq(alt, az, latitude, longitude, elevation, time):
     # Retourner les valeurs RA et Dec
     return equatorial.ra.hour, equatorial.dec.degree
 
-def convert_eq_to_altaz(ra, dec, latitude, longitude, elevation, time):
+def convert_eq_to_altaz(ra:float, dec:float, latitude:float, longitude:float, elevation:float, time):
     # Définir la position du site
     location = EarthLocation(lat=latitude*deg, lon=longitude*deg, height=elevation*m)
     
@@ -80,7 +79,7 @@ def convert_eq_to_altaz(ra, dec, latitude, longitude, elevation, time):
     return altaz.alt.degree, altaz.az.degree
 
 
-def angle_to_steps(self, angle_degrees):
+def angle_to_steps(self, angle_degrees:float) -> int:
     """
     Convert an angle in degrees to motor steps
     """

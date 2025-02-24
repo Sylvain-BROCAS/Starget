@@ -12,7 +12,6 @@ from astropy.time import Time as astropyTime
 from typing import Callable, Coroutine, Any
 import threading
 
-
 class AsyncTaskManager:
     def __init__(self, logger: Logger):
         self.tasks = asyncio.Queue()
@@ -140,8 +139,8 @@ class TelescopeDevice:
         self._parked: bool = True
         self._slewing: bool = False
 
-        self._target_ra: float = None
-        self._target_dec: float = None
+        self._target_ra: float | None = None
+        self._target_dec: float | None = None
         self._RA_rate: float = 0.0 # ["/SI s]
         self._DEC_rate: float = 0.0 # ["/SI s]
         self._guide_RA_rate: float = 0.0
@@ -157,15 +156,7 @@ class TelescopeDevice:
         # Add GPS Setup
 
     # ---------------------------- Async loop methods ---------------------------- #
-    def stop_loop(self):
-        """Arrête proprement la loop"""
-        with self._loop_lock:
-            if self._loop_running:
-                # Utilise la méthode stop() de votre AsyncTaskManager
-                self.task_manager.stop_loop()
-                if self._loop_thread:
-                    self._loop_thread.join(timeout=5.0)
-                self._loop_running = False
+
     # ---------------------------------------------------------------------------- #
     #                                  Properties                                  #
     # ---------------------------------------------------------------------------- #
@@ -650,7 +641,7 @@ class TelescopeDevice:
         self.logger.debug(f'[Side of pier] {str(side)}')
     
     @property
-    def TargetRightAscension(self) -> float:
+    def TargetRightAscension(self) -> float | None:
         self._lock.acquire()
         res = self._target_ra
         self._lock.release()
@@ -663,7 +654,7 @@ class TelescopeDevice:
         self.logger.debug(f'[Target RA] {str(ra)}')
 
     @property
-    def TargetDeclination(self) -> float:
+    def TargetDeclination(self) -> float | None:
         self._lock.acquire()
         res = self._target_dec
         self._lock.release()
@@ -679,7 +670,7 @@ class TelescopeDevice:
     
     # ---------------------------------- Others ---------------------------------- #
     @property
-    def SiderealTime(self) -> float:
+    def SiderealTime(self):
         self._lock.acquire()
         res = get_local_sidereal_time(self.SiteLatitude, self.SiteLongitude, self.SiteElevation)
         self._lock.release()
@@ -769,13 +760,14 @@ class TelescopeDevice:
 
         # self.task_manager.add_task(move_axis_task)
         # self.logger.debug(f"MoveAxis task added to queue for axis {axis}")
-        with self._lock:
-            self._is_moving = True
-            self._at_home = False
-            self._at_park = False
-            self.Tracking = False
-            
-        asyncio.sleep(.5)
+        async def simulator():
+            with self._lock:
+                self._is_moving = True
+                self._at_home = False
+                self._at_park = False
+                self.Tracking = False
+            await asyncio.sleep(5)
+        self.task_manager.add_task(simulator)
 
 
     def Park(self) -> None: # TODO : swap dunny funtion to real motor control
@@ -805,19 +797,20 @@ class TelescopeDevice:
 
         # self.task_manager.add_task(park_task)
         # self.logger.debug("Park task added to queue")
-        with self._lock:
-            self._is_moving = True
-            self._at_home = False
-            self._at_park = False
-            tracking_state = self.Tracking
-            self.Tracking = False
-            
-        asyncio.sleep(5)
-        with self._lock:
-            self._is_moving = False
-            self._at_home = False
-            self._at_park = True
-            self.Tracking = False
+        async def simulator():
+            with self._lock:
+                self._is_moving = True
+                self._at_home = False
+                self._at_park = False
+                self.Tracking = False
+            await asyncio.sleep(5)
+        
+            with self._lock:
+                self._is_moving = False
+                self._at_home = False
+                self._at_park = True
+                self.Tracking = False
+        self.task_manager.add_task(simulator)
     
     def FindHome(self) -> None: # TODO : swap dunny funtion to real motor control
         # def find_home_task():
@@ -846,19 +839,20 @@ class TelescopeDevice:
 
         # self.task_manager.add_task(find_home_task)
         # self.logger.debug("FindHome task added to queue")
-        with self._lock:
-            self._is_moving = True
-            self._at_home = False
-            self._at_park = False
-            tracking_state = self.Tracking
-            self.Tracking = False
-            
-        asyncio.sleep(5)
-        with self._lock:
-            self._is_moving = False
-            self._at_home = True
-            self._at_park = False
-            self.Tracking = False
+        async def simulator():
+            with self._lock:
+                self._is_moving = True
+                self._at_home = False
+                self._at_park = False
+                self.Tracking = False
+            await asyncio.sleep(5)
+        
+            with self._lock:
+                self._is_moving = False
+                self._at_home = True
+                self._at_park = False
+                self.Tracking = False
+        self.task_manager.add_task(simulator)
 
     def AbortSlew(self): # TODO : swap dunny funtion to real motor control
         # async def abort_slew_task():
@@ -871,7 +865,12 @@ class TelescopeDevice:
 
         # self.task_manager.add_task(abort_slew_task)
         # self.logger.debug("AbortSlew task added to queue")
-        asyncio.sleep(5)
+        async def simulator():
+            await asyncio.sleep(5)
+            with self._lock:
+                self._is_moving = False
+
+        self.task_manager.add_task(simulator)
 
     def SlewToCoordinates(self, RightAscension: float, Declination: float): # TODO : swap dunny funtion to real motor control
         # async def slew_to_coordinates_task():
@@ -916,26 +915,30 @@ class TelescopeDevice:
         #     self.logger.info("Slewing complete.")
         # self.task_manager.add_task(slew_to_coordinates_task)
         # self.logger.debug("SlewToCoordinates task added to queue")
-        with self._lock:
-            self._is_moving = True
-            self._at_home = False
-            self._at_park = False
-            tracking_state = self.Tracking
-            self.Tracking = False
-            
-        asyncio.sleep(5)
-        with self._lock:
-            self._is_moving = False
-            self._at_home = False
-            self._at_park = False
-            self.Tracking = tracking_state
+        
+        async def simulator():
+            with self._lock:
+                self._is_moving = True
+                self._at_home = False
+                self._at_park = False
+                tracking_state = self.Tracking
+                self.Tracking = False
+            await asyncio.sleep(5)
+        
+            with self._lock:
+                self._is_moving = False
+                self._at_home = False
+                self._at_park = False
+                self.Tracking = tracking_state
+        self.task_manager.add_task(simulator)
 
     def SlewToAltAz(self, Altitude: float, Azimuth: float, ): #REVIEW
-        ra, dec = self.altaz_to_radec(Altitude, Azimuth)
+        ra, dec = convert_altaz_to_eq(Altitude, Azimuth, self.SiteLatitude, self.SiteLongitude, self.SiteElevation, Time.now())
         self.SlewToCoordinates(ra, dec)
 
     def SlewToTarget(self): #REVIEW
-        self.SlewToCoordinates(self.TargetRA, self.TargetDeclination)
+        if self.TargetRightAscension is not None and self.TargetDeclination is not None:
+            self.SlewToCoordinates(self.TargetRightAscension, self.TargetDeclination)
     
     def SlewToCoordinatesAsync(self, RightAscension: float, Declination: float):# REVIEW
         self.SlewToCoordinates(RightAscension, Declination)
@@ -947,7 +950,7 @@ class TelescopeDevice:
         self.SlewToTarget()
 
     def DestinationSideOfPier(self, ra:float, dec: float) -> PierSide: # REVIEW
-        lst: float = get_local_sidereal_time()
+        lst: float = get_local_sidereal_time(self.SiteLatitude, self.SiteLongitude, self.SiteElevation)
 
         ha: float = lst - ra
 
@@ -1027,8 +1030,9 @@ class TelescopeDevice:
         This method instructs the telescope to point at the current target.
         """
         # Implement logic to sync to target
-        self._RA = self._target_ra
-        self._DEC = self._target_dec
+        if self._target_ra is not None and self._target_dec is not None:
+            self._RA = self._target_ra
+            self._DEC = self._target_dec
 
     # --------------------------------- Utilities -------------------------------- #
     

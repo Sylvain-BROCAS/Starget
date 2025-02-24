@@ -1400,7 +1400,7 @@ class sideofpier:
             sideofpier = int(sideofpierstr)
             if sideofpier not in allowed_SOP:
                 resp.text = MethodResponse(req,
-                                           InvalidOperationException(f'SideOfPier {sideofpier} is not an allowed enum value for this device. Allowed enum values are : {allowed_SOP}'))
+                                           InvalidOperationException(f'SideOfPier {sideofpier} is not an allowed enum value for this device. Allowed enum values are : {allowed_SOP}')).json
                 return
         except:
             resp.text = MethodResponse(req,
@@ -1581,7 +1581,7 @@ class sitelongitude:
             # -----------------------------
             if sitelongitude < -180 or sitelongitude > 180:
                 resp.text = MethodResponse(req, InvalidValueException(
-                    f'SiteLongitude {sitelongitudestr} is not a valid number in the range [-180, 180].'))
+                    f'SiteLongitude {sitelongitudestr} is not a valid number in the range [-180, 180].')).json
                 return
             tel_dev.SiteLongitude = sitelongitude
             # -----------------------------
@@ -1649,7 +1649,7 @@ class slewsettletime:
         # RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         if slewsettletime < 0:
             resp.text = MethodResponse(req,
-                                       InvalidValueException(f'SlewSettleTime {slewsettletimestr} is not a valid number in the range [0, infinity).'))
+                                       InvalidValueException(f'SlewSettleTime {slewsettletimestr} is not a valid number in the range [0, infinity).')).json
             return
         try:
             # -----------------------------
@@ -2089,7 +2089,7 @@ class targetrightascension:
 
         try:
             # ----------------------
-            val: float = tel_dev.TargetRightAscension
+            val: float | None = tel_dev.TargetRightAscension
             if val is None:
                 resp.text = PropertyResponse(None, req,
                                          InvalidOperationException('TargetRightAscension is not set')).json
