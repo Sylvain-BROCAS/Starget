@@ -9,51 +9,7 @@
 # Python Compatibility: Requires Python 3.7 or later
 # GitHub: https://github.com/ASCOMInitiative/AlpycaDevice
 #
-# -----------------------------------------------------------------------------
-# MIT License
-#
-# Copyright (c) 2022-2024 Bob Denny
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-# -----------------------------------------------------------------------------
-# Edit History:
-# 16-Dec-2022   rbd 0.1 Initial edit for Alpaca sample/template
-# 20-Dec-2022   rbd 0.1 Correct endpoint URIs
-# 21-Dec-2022   rbd 0.1 Refactor for import protection. Add configurtion.
-# 22-Dec-2020   rbd 0.1 Start of logging
-# 24-Dec-2022   rbd 0.1 Logging
-# 25-Dec-2022   rbd 0.1 Add milliseconds to logger time stamp
-# 27-Dec-2022   rbd 0.1 Post-processing logging of request only if not 200 OK
-#               MIT License and module header. No multicast on device duh.
-# 28-Dec-2022   rbd 0.1 Rename conf.py to config.py to avoid conflict with sphinx
-# 30-Dec-2022   rbd 0.1 Device number in /setup routing template. Last chance
-#               exception handler, Falcon responder uncaught exeption handler.
-# 01-Jan-2023   rbd 0.1 Docstring docs
-# 13-Jan-2023   rbd 0.1 More docstring docs. Fix LoggingWSGIRequestHandler,
-#               log.logger needs explicit setting in main()
-# 23-May-2023   rbd 0.2 GitHub Issue #3 https://github.com/BobDenny/AlpycaDevice/issues/3
-#               Corect routing device number capture spelling.
-# 23-May-2023   rbd 0.2 Refactoring for  multiple ASCOM device type support
-#               GitHub issue #1
-# 13-Sep-2024   rbd 1.0 Add support for enum classes within the responder modules
-#               GitHub issue #12
-#
+
 import sys
 import traceback
 import inspect
@@ -220,7 +176,6 @@ def main():
     # Share this logger throughout
     log.logger = logger
     exceptions.logger = logger
-    telescope.start_tel_device(logger)
     discovery.logger = logger
     set_shr_logger(logger)
 
@@ -228,6 +183,9 @@ def main():
     # FOR EACH ASCOM DEVICE #
     #########################
     telescope.logger = logger
+    
+    tel_dev = telescope.start_tel_device(logger)
+
     # -----------------------------
     # Last-Chance Exception Handler
     # -----------------------------
@@ -270,9 +228,15 @@ def main():
     with make_server(Config.ip_address, Config.port, falc_app, handler_class=LoggingWSGIRequestHandler) as httpd:
         logger.info(f'==STARTUP== Serving on {Config.ip_address}:{Config.port}. Time stamps are UTC.')
         # Serve until process is killed
-        httpd.serve_forever()
+        try:
+            httpd.serve_forever()
+        finally:
+            logger.info('==SHUTDOWN== Server shutting down.')
+            httpd.server_close()
+            tel_dev.stop_loop()
 
 # ========================
 if __name__ == '__main__':
+    print('Starting Alpaca Device Server')
     main()
 # ========================

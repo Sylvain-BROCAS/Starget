@@ -21,7 +21,7 @@ equatorial_system = 2 # J2000
 
 slew_settle_time = 1 # [s]
 tracking_rates = [123]
-axis_rates = [6000.0, 0.0] # [°/s]
+axis_rates = [21600000, 1] # ["/s] > 0.0 for RA, 0.0 for DEC
 site_elevation = 0 # [m]
 site_latitude = 0 # [°] in [-90°, +90°]
 site_longitude = 0 # [°] in [-180°, +180°]

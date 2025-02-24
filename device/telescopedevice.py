@@ -1,7 +1,6 @@
-from threading import Timer, Lock
+from threading import Timer, Lock, Thread
 
 from serial import protocol_handler_packages
-from telescope_enum import AlignmentModes
 from telescope_enum import *
 from utilities import *
 from logging import Logger
@@ -9,23 +8,89 @@ from motor_control import MKSMotor
 from config import Config
 from datetime import datetime
 import asyncio
-from typing import Coroutine, Any
 from astropy.time import Time as astropyTime
+from typing import Callable, Coroutine, Any
+import threading
+
+
+class AsyncTaskManager:
+    def __init__(self, logger: Logger):
+        self.tasks = asyncio.Queue()
+        self.running = True
+        self.loop = asyncio.new_event_loop()
+        self.thread = threading.Thread(target=self._run_loop, name="AsyncTaskManagerThread", daemon=True)
+        self.logger = logger
+
+    def _run_loop(self):
+        asyncio.set_event_loop(self.loop)
+        self.worker_task = self.loop.create_task(self.worker())
+        try:
+            self.loop.run_forever()
+        finally:
+            self.loop.close()
+
+    async def worker(self):
+        while self.running:
+            try:
+                task = await self.tasks.get()
+                if task is None:
+                    break
+                await self.run_task(task)
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                self.logger.error(f"Error in worker: {e}")
+
+    async def run_task(self, task: Callable[..., Coroutine]):
+        try:
+            await task()
+        except Exception as e:
+            self.logger.error(f"Error executing task: {e}")
+        finally:
+            self.tasks.task_done()
+
+    def add_task(self, task: Callable[..., Coroutine]):
+        future = asyncio.run_coroutine_threadsafe(self.tasks.put(task), self.loop)
+        return future.result()  # Bloque jusqu'à ce que la tâche soit ajoutée
+
+    def start(self):
+        self.logger.info("Starting AsyncTaskManager thread")
+        self.thread.start()
+
+    def stop_loop(self):
+        self.running = False
+        self.loop.call_soon_threadsafe(self.loop.stop)
+        self.thread.join(timeout=5.0)
+
 
 class TelescopeDevice:
     def __init__(self, logger:Logger):
         # Initialize telescope properties
-        self.logger: Logger = logger
-        self.name:str = 'Starget Mount Device'
-        self._lock = Lock()
-        self._connlock = Lock()
+        self.logger = logger
+        self._lock = threading.RLock()
+        self._connlock = threading.RLock()
+        self.task_manager = AsyncTaskManager(logger)
+        self.task_manager.start()
         self._timer = None
+        self._connected = False
+        self._connecting = False
+        self._sync_write_connected = True
+
+        self.name:str = 'Starget Mount Device'
+
+        
 
         # --------------------------------- Settings --------------------------------- #
         self.r = 100 # reduction ratio of the motor gear
         self.steps_rotation = 200 # steps per degree of the motor
         self.max_rpm: int = 10000 # maximum rotational speed in revolutions per minute
         self.microstepping = 32 # miccrostepping division factor
+        self._tracking_rates_values: dict[str, float] = {
+                                                        "driveSidereal"   : 15.041 , # ["/s]
+                                                        "driveLunar"      : 1,
+                                                        "driveSolar"      : 2,
+                                                        "driveKing"       : 3
+                                                            }
         # --------------------------- Telescope parameters --------------------------- #
         # Example, adjust as needed
         self._alignment_mode: AlignmentModes = AlignmentModes(Config.alignment_mode)
@@ -62,14 +127,8 @@ class TelescopeDevice:
         self._conn_time_sec: float = 5   # Async connect delay
 
         # ----------------------------- Telescope status ----------------------------- #
-        self._connected: bool = False
-        self._connecting: bool = False
-        self._sync_write_connected: bool = True
-
         self._RA: float = 0.0
         self._DEC: float = 0.0
-        self._target_rightascension: float = 0.0
-        self._target_declination: float = 0.0
 
         self._at_home: bool = False
         self._at_park: bool = False
@@ -81,8 +140,8 @@ class TelescopeDevice:
         self._parked: bool = True
         self._slewing: bool = False
 
-        self._target_ra: float = 0.0
-        self._target_dec: float = 0.0
+        self._target_ra: float = None
+        self._target_dec: float = None
         self._RA_rate: float = 0.0 # ["/SI s]
         self._DEC_rate: float = 0.0 # ["/SI s]
         self._guide_RA_rate: float = 0.0
@@ -95,7 +154,18 @@ class TelescopeDevice:
         # ----------------------------------- Setup ---------------------------------- #
         self._RA_motor = MKSMotor(is_RA_homed, "e0")
         self._DEC_motor = MKSMotor(is_DEC_homed, "e1")
+        # Add GPS Setup
 
+    # ---------------------------- Async loop methods ---------------------------- #
+    def stop_loop(self):
+        """Arrête proprement la loop"""
+        with self._loop_lock:
+            if self._loop_running:
+                # Utilise la méthode stop() de votre AsyncTaskManager
+                self.task_manager.stop_loop()
+                if self._loop_thread:
+                    self._loop_thread.join(timeout=5.0)
+                self._loop_running = False
     # ---------------------------------------------------------------------------- #
     #                                  Properties                                  #
     # ---------------------------------------------------------------------------- #
@@ -103,43 +173,44 @@ class TelescopeDevice:
     # -------------------------------- Connection -------------------------------- #
     @property
     def connected(self) -> bool:
-        self._connlock.acquire()
-        res = self._connected
-        self._connlock.release()
-        return res
+        with self._connlock:
+            return self._connected
     @connected.setter
-    def connected (self, toconnect: bool):
-        self._connlock.acquire()
-        if (not toconnect) and self._connected and self._is_moving:
-            self._connlock.release()
-            # Yes you could call Halt() but this is for illustration
-            raise RuntimeError('Cannot disconnect while telescope is moving')
-        if toconnect:
-            if (self._sync_write_connected):
-                self._connected = True
-                self.logger.info('[instant connected]')
-                self._connlock.release()
+    def connected(self, toconnect: bool):
+        with self._connlock:
+            # TODO : Manage disconnection properly(stop telescope movement etc)
+            if toconnect:
+                if self._sync_write_connected:
+                    self._connected = True
+                    self.logger.info("[Instant connected]")
+                else:
+                    self.logger.info("[Delayed connecting]")
+                    self.task_manager.add_task(self._async_connect)
+                    self.logger.info("[Connection task added]")
             else:
-                self._connlock.release()
-                self.logger.info('[delayed connecting]')
-                self.Connect()      # Does own locking
-        else:
-            self._connected = False
-            self._connlock.release()
-            self.logger.info('[instant disconnected]')
+                self._connected = False
+                self.logger.info("[Disconnected]")
+
+    async def _async_connect(self):
+        """ Connexion asynchrone au télescope """
+        with self._connlock:
+            self._connecting = True
+        self.logger.info("[Connecting... async task started]")
+        await asyncio.sleep(5)  # Simulation de délai de connexion
+        with self._connlock:
+            self._connected = True
+            self._connecting = False
+        self.logger.info("[Connected]")
+
 
     @property
     def connecting(self) -> bool:
-        self._connlock.acquire()
-        res = self._connecting
-        self._connlock.release()
-        return res
+        with self._connlock:
+            return self._connecting
     @connecting.setter
-    def connecting(self, toconnect: bool) -> None:
-        self._connlock.acquire()
-        self._connecting = toconnect
-        self._connlock.release()
-
+    def connecting(self, toconnect: bool):
+        with self._connlock:
+            self._connecting = toconnect
     # --------------------------- Site properties --------------------------- #
     @property
     def SiteElevation(self) -> float:
@@ -523,10 +594,10 @@ class TelescopeDevice:
     @Tracking.setter
     def Tracking(self, tracking: bool) -> None:
         self._lock.acquire()
-        self._is_tracking = tracking
-        #TODO : start tracking method if tracking is True
+        tracking_rate_value = self._tracking_rates_values[self._tracking_rate.name]
+        # self._RA_motor.move_constant_speed('CW', tracking_rate_value) # TODO : still dummy code
         self._lock.release()
-        self.logger.debug(f'[Tracking] {str(tracking)}')
+        self.logger.debug(f'[Tracking] {str(tracking)} at rate {str(self.TrackingRate)}')
 
     @property
     def TrackingRate(self) -> float:
@@ -594,13 +665,13 @@ class TelescopeDevice:
     @property
     def TargetDeclination(self) -> float:
         self._lock.acquire()
-        res = self._target_declination
+        res = self._target_dec
         self._lock.release()
         return res
     @TargetDeclination.setter
     def TargetDeclination(self, declination: float) -> None:
         self._lock.acquire()
-        self._target_declination = declination
+        self._target_dec = declination
         self._lock.release()
         self.logger.debug(f'[Target declination] {str(declination)}')
 
@@ -676,83 +747,207 @@ class TelescopeDevice:
         self._connlock.release()
     # --------------------------- Slew related methods --------------------------- #
     # Utilities
-    async def MoveAxis(self, axis:int, rate:float) -> None:
-        if rate>0:
-            dir = "CW"
-        else:
-            dir = "CCW"
+    def MoveAxis(self, axis: int, rate: float) -> None: # TODO : swap dunny funtion to real motor control
+        # async def move_axis_task():
+        #     if rate > 0:
+        #         dir = "CW"
+        #     else:
+        #         dir = "CCW"
+                
+        #     with self._lock:
+        #         self._is_moving = True
+        #         self._at_home = False
+        #         self._at_park = False
+                
+        #         # Exécution immédiate du mouvement
+        #         if axis == 'RA':
+        #             self._RA_motor.move_constant_speed(dir, abs(rate))
+        #         elif axis == 'DEC':
+        #             self._DEC_motor.move_constant_speed(dir, abs(rate))
+                    
+        #     self.logger.debug(f"Started moving axis {axis} at rate {rate}")
 
-        self._is_moving = True
-        self._at_home = False
-        self._at_park = False
-        if axis == 'RA':
-            await self._RA_motor.move_constant_speed(dir, abs(rate))
-        elif axis == 'DEC':
-            await self._DEC_motor.move_constant_speed(dir, abs(rate))
+        # self.task_manager.add_task(move_axis_task)
+        # self.logger.debug(f"MoveAxis task added to queue for axis {axis}")
+        with self._lock:
+            self._is_moving = True
+            self._at_home = False
+            self._at_park = False
+            self.Tracking = False
+            
+        asyncio.sleep(.5)
 
-    async def Park(self) -> None:
-        self.logger.info("Parking telescope...")
-        self._is_moving = True
-        tasks = [self._RA_motor.return_to_zero,
-            self._DEC_motor.return_to_zero
-        ]
-        await asyncio.gather(*tasks)
-        self._is_moving = False
-        self._at_park = True
-        self.logger.info("Telescope parked.")
+
+    def Park(self) -> None: # TODO : swap dunny funtion to real motor control
+        # async def park_task():
+        #     self.logger.info("Parking telescope...")
+        #     self._lock.acquire()
+        #     self._is_moving = True
+        #     self._at_home = False
+        #     self._at_park = False
+        #     self.Tracking = False
+        #     self._lock.release()
+
+        #     # Retour à zéro pour RA et DEC
+        #     self._RA_motor.return_to_zero()
+        #     self._DEC_motor.return_to_zero()
+
+        #     # Attendre que les deux moteurs aient terminé leur mouvement
+        #     while self._RA_motor.is_moving() or self._DEC_motor.is_moving():
+        #         asyncio.sleep(0.1)
+
+        #     self._lock.acquire()
+        #     self._is_moving = False
+        #     self._at_park = True
+        #     self._lock.release()
+
+        #     self.logger.info("Telescope parked.")
+
+        # self.task_manager.add_task(park_task)
+        # self.logger.debug("Park task added to queue")
+        with self._lock:
+            self._is_moving = True
+            self._at_home = False
+            self._at_park = False
+            tracking_state = self.Tracking
+            self.Tracking = False
+            
+        asyncio.sleep(5)
+        with self._lock:
+            self._is_moving = False
+            self._at_home = False
+            self._at_park = True
+            self.Tracking = False
     
-    async def FindHome(self) -> None:
-        self.logger.info("Finding home position...")
-        tasks: list[Coroutine[Any, Any, None]] = [
-            self._find_home_ra(),
-            self._find_home_dec()
-        ]
-        await asyncio.gather(*tasks)
-        self._at_home = True
-        self.logger.info("Home position found.")
+    def FindHome(self) -> None: # TODO : swap dunny funtion to real motor control
+        # def find_home_task():
+        #     self.logger.info("Finding home position...")
+        #     self._lock.acquire()
+        #     self._is_moving = True
+        #     self._at_home = False
+        #     self._at_park = False
+        #     self.Tracking = False
+        #     self._lock.release()
 
-    async def _find_home_ra(self) -> None:
-        await asyncio.to_thread(self._RA_motor.find_home)
+        #     # Lancer la recherche du point d'origine pour RA et DEC
+        #     self._RA_motor.find_home()
+        #     self._DEC_motor.find_home()
 
-    async def _find_home_dec(self):
-        await asyncio.to_thread(self._DEC_motor.find_home)
+        #     # Attendre que les deux moteurs aient terminé leur mouvement
+        #     while self._RA_motor.is_moving() or self._DEC_motor.is_moving():
+        #         asyncio.sleep(0.1)
 
-    def AbortSlew(self):
-        self.logger.info("Aborting slew...")
-        self._RA_motor.stop()
-        self._DEC_motor.stop()
-        self._is_moving = False
-        self.logger.info("Slew aborted.")
+        #     self._lock.acquire()
+        #     self._is_moving = False
+        #     self._at_home = True
+        #     self._lock.release()
 
-    def SlewToAltAz(self, Altitude: float, Azimuth: float, Duration: float = 0.0):# TODO : Not implemented yet
-        # Implementation here
-        pass
+        #     self.logger.info("Home position found.")
 
-    def SlewToAltAzAsync(self, Altitude: float, Azimuth: float, Duration: float = 0.0):# TODO : Not implemented yet
-        # Implementation here
-        pass
+        # self.task_manager.add_task(find_home_task)
+        # self.logger.debug("FindHome task added to queue")
+        with self._lock:
+            self._is_moving = True
+            self._at_home = False
+            self._at_park = False
+            tracking_state = self.Tracking
+            self.Tracking = False
+            
+        asyncio.sleep(5)
+        with self._lock:
+            self._is_moving = False
+            self._at_home = True
+            self._at_park = False
+            self.Tracking = False
 
-    def SlewToAltAzSync(self, Altitude: float, Azimuth: float, Duration: float = 0.0):# TODO : Not implemented yet
-        # Implementation here
-        pass
+    def AbortSlew(self): # TODO : swap dunny funtion to real motor control
+        # async def abort_slew_task():
+        #     self.logger.info("Aborting slew...")
+        #     with self._lock:
+        #         self._RA_motor.stop()
+        #         self._DEC_motor.stop()
+        #         self._is_moving = False
+        #     self.logger.info("Slew aborted.")
 
-    async def SlewToCoordinates(self, RightAscension: float, Declination: float):
-        pass
+        # self.task_manager.add_task(abort_slew_task)
+        # self.logger.debug("AbortSlew task added to queue")
+        asyncio.sleep(5)
+
+    def SlewToCoordinates(self, RightAscension: float, Declination: float): # TODO : swap dunny funtion to real motor control
+        # async def slew_to_coordinates_task():
+        #     self.logger.info(f"Slewing to coordinates RA={RightAscension}, DEC={Declination}...")
+        #     self._lock.acquire()
+        #     self._is_moving = True
+        #     self._at_home = False
+        #     self._at_park = False
+        #     self.Tracking = False
+        #     self._lock.release()
     
-    def SlewToCoordinatesAsync(self, RightAscension: float, Declination: float, Duration: float = 0.0):# TODO : Not implemented yet
-        # Implementation here
-        pass
+        #     # Calcul des vitesses de déplacement pour RA et DEC
+        #     tracking_rate_value = self._tracking_rates_values[self.TrackingRate]
+        #     ra_rate = self.RA_Rate
+        #     dec_rate = self.DEC_Rate
 
-    def SlewToTarget(self):# TODO : Not implemented yet
-        # Implementation here
-        pass
+        #     # Calcul des mouvements pour RA et DEC
+        #     motor_ra = self._RA_motor.read_shaft_angle()
+        #     motor_dec = self._DEC_motor.read_shaft_angle()
+        #     ra_slew_duration = abs(RightAscension - motor_ra) / ra_rate
+        #     dec_slew_duration = abs(Declination - motor_dec) / dec_rate
+        #     slew_time = max(ra_slew_duration, dec_slew_duration)
 
-    def SlewToTargetAsync(self):# TODO : Not implemented yet
-        # Implementation here
-        pass
+        #     # calculate RA drift due to slew
+        #     ra_drift = tracking_rate_value * slew_time
+        #     compensated_ra = motor_ra + ra_drift
 
-    def DestinationSideOfPier(self, ra:float, dec: float) -> PierSide:# TODO
-        lst: float = get_lst()
+        #     self._RA_motor.move_to_position(compensated_ra)
+        #     self._DEC_motor.move_to_position(Declination)
+
+        #     # Exécution des mouvements
+        #     self._RA_motor.move_to_target(RightAscension, ra_rate)
+        #     self._DEC_motor.move_to_target(Declination, dec_rate)
+            
+        #     # Attendre que les deux moteurs aient terminé leur mouvement
+        #     while self._RA_motor.is_moving() or self._DEC_motor.is_moving():
+        #         asyncio.sleep(0.1)
+
+        #     self._lock.acquire()
+        #     self._is_moving = False
+        #     self._lock.release()
+        #     self.logger.info("Slewing complete.")
+        # self.task_manager.add_task(slew_to_coordinates_task)
+        # self.logger.debug("SlewToCoordinates task added to queue")
+        with self._lock:
+            self._is_moving = True
+            self._at_home = False
+            self._at_park = False
+            tracking_state = self.Tracking
+            self.Tracking = False
+            
+        asyncio.sleep(5)
+        with self._lock:
+            self._is_moving = False
+            self._at_home = False
+            self._at_park = False
+            self.Tracking = tracking_state
+
+    def SlewToAltAz(self, Altitude: float, Azimuth: float, ): #REVIEW
+        ra, dec = self.altaz_to_radec(Altitude, Azimuth)
+        self.SlewToCoordinates(ra, dec)
+
+    def SlewToTarget(self): #REVIEW
+        self.SlewToCoordinates(self.TargetRA, self.TargetDeclination)
+    
+    def SlewToCoordinatesAsync(self, RightAscension: float, Declination: float):# REVIEW
+        self.SlewToCoordinates(RightAscension, Declination)
+    
+    def SlewToAltAzAsync(self, Altitude: float, Azimuth: float):# REVIEW
+        self.SlewToAltAz(Altitude, Azimuth) 
+
+    def SlewToTargetAsync(self):# REVIEW
+        self.SlewToTarget()
+
+    def DestinationSideOfPier(self, ra:float, dec: float) -> PierSide: # REVIEW
+        lst: float = get_local_sidereal_time()
 
         ha: float = lst - ra
 

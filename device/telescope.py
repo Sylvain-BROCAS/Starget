@@ -60,6 +60,7 @@ def start_tel_device(logger: Logger):
     logger = logger
     global tel_dev
     tel_dev = TelescopeDevice(logger)
+    return tel_dev
 
 
 # --------------------
@@ -95,14 +96,16 @@ class commandstring:
 class connect:
     def on_put(self, req: Request, resp: Response, devnum: int):
         try:
-            # ------------------------
-            tel_dev.Connect()
-            # ------------------------
+            if tel_dev.connected:
+                resp.text = MethodResponse(req).json
+                return
+
+            tel_dev.logger.info("Received connection request")
+            tel_dev.connected = True  # Déclenche l'exécution asynchrone via AsyncTaskManager
             resp.text = MethodResponse(req).json
         except Exception as ex:
-            resp.text = MethodResponse(req,
-                                       DriverException(0x500, 'Telescope.Connect failed', ex)).json
-
+            tel_dev.logger.error(f"Connect failed: {ex}")
+            resp.text = MethodResponse(req, DriverException(0x500, 'Telescope.Connect failed', ex)).json
 
 @before(PreProcessRequest(maxdev))
 class connected:
@@ -140,6 +143,21 @@ class connecting:
             resp.text = PropertyResponse(None, req,
                                          DriverException(0x500, 'Telescope.Connecting failed', ex)).json
 
+@before(PreProcessRequest(maxdev))
+class disconnect:
+    def on_put(self, req: Request, resp: Response, devnum: int):
+        try:
+            if not tel_dev.connected:
+                resp.text = MethodResponse(req).json
+                return
+
+            tel_dev.logger.info("Received disconnect request")
+            tel_dev.connected = False
+            resp.text = MethodResponse(req).json
+        except Exception as ex:
+            tel_dev.logger.error(f"Disconnect failed: {ex}")
+            resp.text = MethodResponse(req, DriverException(0x500, 'Telescope.Disconnect failed', ex)).json
+
 
 @before(PreProcessRequest(maxdev))
 class description:
@@ -175,19 +193,6 @@ class devicestate:
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                                          DriverException(0x500, 'telescope.Devicestate failed', ex)).json
-
-
-@before(PreProcessRequest(maxdev))
-class disconnect:
-    def on_put(self, req: Request, resp: Response, devnum: int):
-        try:
-            # ---------------------------
-            tel_dev.Disconnect()
-            # ---------------------------
-            resp.text = MethodResponse(req).json
-        except Exception as ex:
-            resp.text = MethodResponse(req,
-                                       DriverException(0x500, 'Telescope.Disconnect failed', ex)).json
 
 
 @before(PreProcessRequest(maxdev))
@@ -233,13 +238,8 @@ class abortslew:
 
         try:
             # -----------------------------
-            slewing: bool = tel_dev.Slewing
-            if slewing:
-                tel_dev.AbortSlew()
-                resp.text = MethodResponse(req).json
-            else:
-                resp.text = PropertyResponse(None, req,
-                                             InvalidOperationException("Telescope not moving, can't abort slew")).json
+            tel_dev.AbortSlew()
+            resp.text = MethodResponse(req).json
             # -----------------------------
         except Exception as ex:
             resp.text = MethodResponse(req,
@@ -362,7 +362,6 @@ class atpark:
 
 @before(PreProcessRequest(maxdev))
 class axisrates:
-
     def on_get(self, req: Request, resp: Response, devnum: int):
         if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
@@ -768,7 +767,6 @@ class declination:
 
 @before(PreProcessRequest(maxdev))
 class declinationrate:
-
     def on_get(self, req: Request, resp: Response, devnum: int):
         if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
@@ -789,9 +787,12 @@ class declinationrate:
             resp.text = PropertyResponse(None, req,
                                          NotConnectedException()).json
             return
+        if not tel_dev.CanSetDECRate: # Set declination rate ONLY if allowed
+            resp.text = MethodResponse(req, 
+                                           InvalidOperationException('Cannot set declination rate on this telescope.')).json
+            return
 
         declinationratestr = get_request_field('DeclinationRate', req)
-        # Raises 400 bad request if missing
         if declinationratestr is None or declinationratestr == "":
             resp.text = PropertyResponse(None, req,
                                           DriverException(0x400, 'Missing DeclinationRate field in request.')).json
@@ -805,57 +806,17 @@ class declinationrate:
         allowed_rates: list[float] = tel_dev.AxisRates
         if not (allowed_rates[1] <= declinationrate <= allowed_rates[0]):
             resp.text = MethodResponse(req,
-                                           InvalidValueException(f'Declination rate {declinationrate} not within allowed range {allowed_rates[0]}-{allowed_rates[1]}.')).json
+                                           InvalidValueException(f'Declination rate {declinationrate} not within allowed range {allowed_rates[1]}-{allowed_rates[0]} "/s')).json
             return
         try:
             # -----------------------------
-            if tel_dev.CanSetDECRate: # Set declination rate ONLY if allowed
-                tel_dev.DEC_Rate = declinationrate
-                resp.text = MethodResponse(req).json
-            else:
-                resp.text = MethodResponse(req, 
-                                           InvalidOperationException('Cannot set declination rate on this telescope.')).json
+            tel_dev.DEC_Rate = declinationrate
+            resp.text = MethodResponse(req).json
             # -----------------------------
-            
         except Exception as ex:
             resp.text = MethodResponse(req,
                                        DriverException(0x500, 'Telescope.Declinationrate failed', ex)).json
-        ##########
-        if not tel_dev.connected:
-            resp.text = PropertyResponse(None, req,
-                                            NotConnectedException()).json
-            return
-
-        declinationratestr = get_request_field('DeclinationRate', req)  
-        # Raises 400 bad request if missing
-        if declinationratestr is None or declinationratestr == "":
-            resp.text = MethodResponse(req,
-                                       DriverException(0x400, 'Missing RightAscensionRate field in request.')).json
-            return
-        try:
-            # -----------------------------
-            allowed_rates: list[float] = tel_dev.AxisRates
-            declinationrate = float(declinationratestr)
-            assert (allowed_rates[0] <= declinationrate <= allowed_rates[1])
-        except:
-            resp.text = MethodResponse(req,
-                                       InvalidValueException(f'Declination rate {declinationrate} not a valid number.')).json
-            return
-
-        try:
-            # -----------------------------
-            if tel_dev.CanSetRaRate:
-                tel_dev.DEC_Rate = declinationrate
-                resp.text = MethodResponse(req).json
-            else:
-                resp.text = MethodResponse(req,
-                                           InvalidOperationException("Can't set right ascension rate on this device")).json
-            # -----------------------------
-            
-        except Exception as ex:
-            resp.text = MethodResponse(req,
-                                       DriverException(0x500, 'Telescope.Rightascensionrate failed', ex)).json
-
+        
 @before(PreProcessRequest(maxdev)) # NOTE : May have to implement mount mechanical range & endstops checks (yet only RA/DEC natural limits)
 class destinationsideofpier:
 
@@ -938,23 +899,23 @@ class doesrefraction:
         # NOTE : Not implemented yet
         resp.text = MethodResponse(req, NotImplementedException()).json
         return
-        # # Raises 400 bad request if missing
-        # doesrefractionstr = get_request_field('DoesRefraction', req)
-        # try:
-        #     doesrefraction = to_bool(doesrefractionstr)
-        # except:
-        #     resp.text = MethodResponse(req,
-        #                                InvalidValueException(f'DoesRefraction {doesrefractionstr} not a valid boolean.')).json
-        #     return
+        # Raises 400 bad request if missing
+        doesrefractionstr = get_request_field('DoesRefraction', req)
+        try:
+            doesrefraction = to_bool(doesrefractionstr)
+        except:
+            resp.text = MethodResponse(req,
+                                       InvalidValueException(f'DoesRefraction {doesrefractionstr} not a valid boolean.')).json
+            return
 
-        # try:
-        #     # -----------------------------
-        #     ### DEVICE OPERATION(PARAM) ###
-        #     # -----------------------------
-        #     resp.text = MethodResponse(req).json
-        # except Exception as ex:
-        #     resp.text = MethodResponse(req,
-        #                                DriverException(0x500, 'Telescope.Doesrefraction failed', ex)).json
+        try:
+            # -----------------------------
+            ### DEVICE OPERATION(PARAM) ###
+            # -----------------------------
+            resp.text = MethodResponse(req).json
+        except Exception as ex:
+            resp.text = MethodResponse(req,
+                                       DriverException(0x500, 'Telescope.Doesrefraction failed', ex)).json
 
 
 @before(PreProcessRequest(maxdev))
@@ -1155,6 +1116,10 @@ class ispulseguiding:
             return
 
         try:
+            if not tel_dev.CanPulseGuide:
+                resp.text = PropertyResponse(False, req,
+                                               InvalidOperationException("Can't pulse guide on this device")).json
+                return
             # ----------------------
             val: bool = tel_dev.PulseGuiding
             # ----------------------
@@ -1347,7 +1312,10 @@ class rightascensionrate:
             resp.text = PropertyResponse(None, req,
                                          NotConnectedException()).json
             return
-
+        if not tel_dev.CanSetRaRate:
+            resp.text = MethodResponse(req,
+                                           InvalidOperationException("Can't set right ascension rate on this device")).json
+            return
         rightascensionratestr: str = get_request_field(
             'RightAscensionRate', req)      
         # Raises 400 bad request if missing
@@ -1357,22 +1325,21 @@ class rightascensionrate:
             return
         try:
             # -----------------------------
-            allowed_rates: list[float] = tel_dev.AxisRates
             rightascensionrate = float(rightascensionratestr)
-            assert (allowed_rates[0] <= rightascensionrate <= allowed_rates[1])
         except:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'RightAscensionRate {rightascensionratestr} not a valid number.')).json
             return
-
+        allowed_rates: list[float] = tel_dev.AxisRates
+        if not (allowed_rates[1] <= rightascensionrate <= allowed_rates[0]):
+            resp.text = MethodResponse(req,
+                                           InvalidValueException(f'Right ascension rate {rightascensionrate} not within allowed range {allowed_rates[1]}-{allowed_rates[0]} "/s')).json
+            return
         try:
             # -----------------------------
-            if tel_dev.CanSetRaRate:
-                tel_dev.RA_Rate = rightascensionrate
-                resp.text = MethodResponse(req).json
-            else:
-                resp.text = MethodResponse(req,
-                                           InvalidOperationException("Can't set right ascension rate on this device")).json
+            
+            tel_dev.RA_Rate = rightascensionrate
+            resp.text = MethodResponse(req).json
             # -----------------------------
             
         except Exception as ex:
@@ -1432,8 +1399,9 @@ class sideofpier:
             allowed_SOP: list[int] = [e.value for e in PierSide]
             sideofpier = int(sideofpierstr)
             if sideofpier not in allowed_SOP:
-                raise InvalidOperationException(
-                    f'SideOfPier {sideofpier} is not an allowed enum value for this device. Allowed enum values are : {allowed_SOP}')
+                resp.text = MethodResponse(req,
+                                           InvalidOperationException(f'SideOfPier {sideofpier} is not an allowed enum value for this device. Allowed enum values are : {allowed_SOP}'))
+                return
         except:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'SideOfPier {sideofpierstr} not a valid integer. Allowed SOP are {allowed_SOP}')).json
@@ -1576,7 +1544,6 @@ class sitelatitude:
 
 @before(PreProcessRequest(maxdev))
 class sitelongitude:
-
     def on_get(self, req: Request, resp: Response, devnum: int):
         if not tel_dev.connected:
             resp.text = PropertyResponse(None, req,
@@ -1610,11 +1577,12 @@ class sitelongitude:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'SiteLongitude {sitelongitudestr} not a valid number.')).json
             return
-        if sitelongitude < -180 or sitelongitude > 180:
-                raise InvalidValueException(
-                    f'SiteLongitude {sitelongitudestr} is not a valid number in the range [-180, 180].')
         try:
             # -----------------------------
+            if sitelongitude < -180 or sitelongitude > 180:
+                resp.text = MethodResponse(req, InvalidValueException(
+                    f'SiteLongitude {sitelongitudestr} is not a valid number in the range [-180, 180].'))
+                return
             tel_dev.SiteLongitude = sitelongitude
             # -----------------------------
             resp.text = MethodResponse(req).json
@@ -1680,8 +1648,9 @@ class slewsettletime:
             return
         # RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
         if slewsettletime < 0:
-            raise InvalidValueException(
-                f'SlewSettleTime {slewsettletimestr} is not a valid number in the range [0, infinity).')
+            resp.text = MethodResponse(req,
+                                       InvalidValueException(f'SlewSettleTime {slewsettletimestr} is not a valid number in the range [0, infinity).'))
+            return
         try:
             # -----------------------------
             tel_dev.SlewSettleTime = slewsettletime
@@ -1871,7 +1840,12 @@ class slewtotarget:
                 resp.text = MethodResponse(req,
                                        ParkedException("Can't move axis while parked")).json
                 return
-            
+            if tel_dev.TargetDeclination is None :
+                resp.text = MethodResponse(req,
+                                       InvalidOperationException("TargetRightAscension must be set before slewing to target")).json
+            if tel_dev.TargetRightAscension is None :
+                resp.text = MethodResponse(req,
+                                       InvalidOperationException("TargetDeclination must be set before slewing to target")).json
             tel_dev.SlewToTarget()
             # -----------------------------
             resp.text = MethodResponse(req).json
@@ -1895,7 +1869,12 @@ class slewtotargetasync:
                 resp.text = MethodResponse(req,
                                        ParkedException("Can't move axis while parked")).json
                 return
-            
+            if tel_dev.TargetDeclination is None :
+                resp.text = MethodResponse(req,
+                                       InvalidOperationException("TargetRightAscension must be set before slewing to target")).json
+            if tel_dev.TargetRightAscension is None :
+                resp.text = MethodResponse(req,
+                                       InvalidOperationException("TargetDeclination must be set before slewing to target")).json
             tel_dev.SlewToTarget()
             # -----------------------------
             resp.text = MethodResponse(req).json
@@ -2056,6 +2035,10 @@ class targetdeclination:
         try:
             # ----------------------
             val: float = tel_dev.TargetDeclination
+            if val is None:
+                resp.text = PropertyResponse(None, req,
+                                         InvalidOperationException('TargetDeclination is not set')).json
+                return
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -2068,8 +2051,7 @@ class targetdeclination:
                                          NotConnectedException()).json
             return
 
-        targetdeclinationstr = get_request_field(
-            'TargetDeclination', req)      
+        targetdeclinationstr = get_request_field('TargetDeclination', req)      
         # Raises 400 bad request if missing
         if targetdeclinationstr is None or targetdeclinationstr == '':
             resp.text = MethodResponse(req,
@@ -2085,6 +2067,7 @@ class targetdeclination:
         if not (-90 <= targetdeclination <= 90):
             resp.text = MethodResponse(req,
                                            InvalidValueException(f'TargetDeclination {targetdeclination} is out of range (-90, 90)')).json
+            return
         try:
             # -----------------------------
             tel_dev.TargetRightAscension = targetdeclination
@@ -2107,6 +2090,10 @@ class targetrightascension:
         try:
             # ----------------------
             val: float = tel_dev.TargetRightAscension
+            if val is None:
+                resp.text = PropertyResponse(None, req,
+                                         InvalidOperationException('TargetRightAscension is not set')).json
+                return
             # ----------------------
             resp.text = PropertyResponse(val, req).json
         except Exception as ex:
@@ -2135,6 +2122,7 @@ class targetrightascension:
         if not (0 <= targetrightascension <= 23.999999):
             resp.text = MethodResponse(req,
                                            InvalidValueException(f'TargetRightAscension {targetrightascension} is out of range (0, 24)')).json
+            return
         try:
             # -----------------------------
             tel_dev.TargetRightAscension = targetrightascension
@@ -2318,10 +2306,6 @@ class unpark:
         try:
             # -----------------------------
             if tel_dev.CanUnpark:
-                if not tel_dev.AtPark:
-                    resp.text = MethodResponse(req,
-                                           InvalidOperationException("Telescope is not parked")).json
-                    return
                 tel_dev.Unpark()  
                 resp.text = MethodResponse(req).json
             else:

@@ -1,5 +1,5 @@
 from astropy.coordinates import AltAz, FK5, EarthLocation
-from astropy.units import m, deg # type: ignore
+from astropy.units import m, deg, hourangle # type: ignore
 from astropy.time import Time
 
 def read_pos_RA():
@@ -43,6 +43,7 @@ def get_UTC_date():
     yyyy-MM-ddTHH:mm:ss.fffffffZ, e.g. 2016-03-04T17:45:31.1234567Z or 
     2016-11-14T07:03:08.1234567Z. 
     Please note the compulsary trailing Z indicating the 'Zulu', UTC time zone."""
+    return "2016-03-04T17:45:31.1234567Z"
 def move_to_pos(motor, position):
     pass
 
@@ -70,10 +71,18 @@ def convert_eq_to_altaz(ra, dec, latitude, longitude, elevation, time):
     location = EarthLocation(lat=latitude*deg, lon=longitude*deg, height=elevation*m)
     
     # Définir les coordonnées équatoriales
-    equatorial = FK5(ra=ra, dec=dec, equinox='J2000')
+    equatorial = FK5(ra=ra*hourangle, dec=dec*deg, equinox='J2000')
     
     # Convertir en AltAz
     altaz = equatorial.transform_to(AltAz(obstime=time, location=location))
     
     # Retourner les valeurs Alt et Az
     return altaz.alt.degree, altaz.az.degree
+
+
+def angle_to_steps(self, angle_degrees):
+    """
+    Convert an angle in degrees to motor steps
+    """
+    steps_per_revolution = self.steps_rotation * self.r * self.microstepping
+    return int(angle_degrees * steps_per_revolution / 360)
