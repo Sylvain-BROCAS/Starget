@@ -233,7 +233,6 @@ def main():
         finally:
             logger.info('==SHUTDOWN== Server shutting down.')
             httpd.server_close()
-            tel_dev.stop_loop()
 
 # ========================
 if __name__ == '__main__':

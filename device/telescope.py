@@ -383,9 +383,9 @@ class axisrates:
 
         try:
             # ----------------------
-            val: list[float] = tel_dev.AxisRates # NOTE : All axis have the same rates range
+            val: dict[str, float] = tel_dev.AxisRates # NOTE : All axis have the same rates range
             # ----------------------
-            resp.text = PropertyResponse(val, req).json
+            resp.text = PropertyResponse([val], req).json
         except Exception as ex:
             resp.text = PropertyResponse(None, req,
                                          DriverException(0x500, 'Telescope.Axisrates failed', ex)).json
@@ -803,10 +803,10 @@ class declinationrate:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'DeclinationRate {declinationratestr} not a valid number.')).json
             return
-        allowed_rates: list[float] = tel_dev.AxisRates
-        if not (allowed_rates[1] <= declinationrate <= allowed_rates[0]):
+        allowed_rates: dict[str, float] = tel_dev.AxisRates
+        if not (allowed_rates["Minimum"] <= declinationrate <= allowed_rates["Maximum"]):
             resp.text = MethodResponse(req,
-                                           InvalidValueException(f'Declination rate {declinationrate} not within allowed range {allowed_rates[1]}-{allowed_rates[0]} "/s')).json
+                                           InvalidValueException(f'Declination rate {declinationrate} not within allowed range {allowed_rates["Minimum"]}-{allowed_rates["Maximum"]} "/s')).json
             return
         try:
             # -----------------------------
@@ -1021,8 +1021,8 @@ class guideratedeclination:
                                        InvalidValueException(f'GuideRateDeclination {guideratedeclinationstr} not a valid number.')).json
             return
         # RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
-        max_rate = tel_dev.AxisRates[0]
-        min_rate = tel_dev.AxisRates[1]
+        max_rate = tel_dev.AxisRates["Maximum"]
+        min_rate = tel_dev.AxisRates["Minimum"]
         if not min_rate <= guideratedeclination <= max_rate:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'GuideRateDeclination {guideratedeclination} is outside the range [{min_rate}, {max_rate}°/s].')).json
@@ -1082,8 +1082,8 @@ class guideraterightascension:
                                        InvalidValueException(f'GuideRateRightAscension {guideraterightascensionstr} not a valid number.')).json
             return
         # RANGE CHECK AS NEEDED ###  # Raise Alpaca InvalidValueException with details!
-        max_rate = tel_dev.AxisRates[0]
-        min_rate = tel_dev.AxisRates[1]
+        max_rate = tel_dev.AxisRates["Maximum"]
+        min_rate = tel_dev.AxisRates["Minimum"]
         if not min_rate <= guideraterightascension <= max_rate:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'GuideRateRightAscension {guideraterightascension} is outside the range [{min_rate}, {max_rate}°/s].')).json
@@ -1155,7 +1155,7 @@ class moveaxis:
                                        InvalidValueException(f'Axis {axis} not a valid enum value. Valid axis numbers are : {[e.value for e in TelescopeAxes]}')).json
             return
 
-        ratestr = get_request_field('Rate', req)
+        ratestr: str = get_request_field('Rate', req)
         # Raises 400 bad request if missing
         if ratestr is None or ratestr == "":
             resp.text = MethodResponse(req,
@@ -1175,9 +1175,9 @@ class moveaxis:
         
         # Check rate value validity
         valid_rates = tel_dev.AxisRates
-        if not valid_rates[0] <= rate <= valid_rates[1]:
+        if not valid_rates["Minimum"] <= rate <= valid_rates["Maximum"]:
             resp.text = MethodResponse(req,
-                                       InvalidValueException(f'Rate {rate} is outside the range [{valid_rates[0]}, {valid_rates[1]}°/s].')).json
+                                       InvalidValueException(f'Rate {rate} is outside the range [{valid_rates["Minimum"]}, {valid_rates["Maximum"]}"/s].')).json
             return
 
         try:
@@ -1330,10 +1330,10 @@ class rightascensionrate:
             resp.text = MethodResponse(req,
                                        InvalidValueException(f'RightAscensionRate {rightascensionratestr} not a valid number.')).json
             return
-        allowed_rates: list[float] = tel_dev.AxisRates
-        if not (allowed_rates[1] <= rightascensionrate <= allowed_rates[0]):
+        allowed_rates: dict[str, float] = tel_dev.AxisRates
+        if not (allowed_rates["Minimum"] <= rightascensionrate <= allowed_rates["Maximum"]):
             resp.text = MethodResponse(req,
-                                           InvalidValueException(f'Right ascension rate {rightascensionrate} not within allowed range {allowed_rates[1]}-{allowed_rates[0]} "/s')).json
+                                           InvalidValueException(f'Right ascension rate {rightascensionrate} not within allowed range {allowed_rates["Minimum"]}-{allowed_rates["Maximum"]} "/s')).json
             return
         try:
             # -----------------------------
@@ -1774,6 +1774,15 @@ class slewtocoordinates:
             resp.text = MethodResponse(req,
                                     ParkedException("Can't move axis while parked")).json
             return
+        
+        if not (-90 <= declination <= 90):
+            resp.text = MethodResponse(req,
+                                           InvalidValueException(f'Declination {declination} is out of range (-90, 90)')).json
+            return
+        if not (0 <= rightascension <= 23.999999):
+            resp.text = MethodResponse(req,
+                                           InvalidValueException(f'RightAscension {rightascension} is out of range (0, 23.999999)')).json
+            return
         try:
             # -----------------------------
             tel_dev.SlewToCoordinates(rightascension, declination)
@@ -2034,7 +2043,7 @@ class targetdeclination:
 
         try:
             # ----------------------
-            val: float = tel_dev.TargetDeclination
+            val: float | None = tel_dev.TargetDeclination
             if val is None:
                 resp.text = PropertyResponse(None, req,
                                          InvalidOperationException('TargetDeclination is not set')).json

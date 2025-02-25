@@ -330,9 +330,9 @@ class TelescopeDevice:
         self.logger.debug(f'[Steps per second] {str(steps_per_sec)}')
 
     @property
-    def AxisRates(self) -> list[float]:
+    def AxisRates(self) -> dict[str, float]:
         self._lock.acquire()
-        res = self._axis_rates
+        res = {"Maximum": self._axis_rates[1], "Minimum": self._axis_rates[0]}
         self._lock.release()
         return res
     # -------------------------- Telescope capabilities -------------------------- #
@@ -579,7 +579,7 @@ class TelescopeDevice:
     @property
     def Tracking(self) -> bool:
         self._lock.acquire()
-        res = self._is_tracking
+        res: bool = self._is_tracking
         self._lock.release()
         return res
     @Tracking.setter
@@ -587,6 +587,7 @@ class TelescopeDevice:
         self._lock.acquire()
         tracking_rate_value = self._tracking_rates_values[self._tracking_rate.name]
         # self._RA_motor.move_constant_speed('CW', tracking_rate_value) # TODO : still dummy code
+        self.tracking: bool = tracking
         self._lock.release()
         self.logger.debug(f'[Tracking] {str(tracking)} at rate {str(self.TrackingRate)}')
 

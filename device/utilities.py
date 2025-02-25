@@ -31,11 +31,11 @@ def get_local_sidereal_time(latitude:float, longitude:float, height:float):
     )
     
     # Récupération du temps GPS actuel
-    current_time = Time.now()
+    current_time: Time = Time.now()
     
     # Calcul du Local Apparent Sidereal Time
     last: Longitude = current_time.sidereal_time('apparent', longitude=location.lon)
-    last_hour:float = last.to_value(hour) # type: ignore
+    last_hour:float = last.to_value(hourangle) # type: ignore
     return last_hour
 
 def get_UTC_date():
