@@ -147,7 +147,7 @@ class TelescopeDevice:
         self._guide_DEC_rate: float = 0.0
         self._tracking_rate: DriveRates = DriveRates.driveSidereal
 
-        self._utc_date: str =  str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        self._utc_date: str = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-3] + 'Z'
         self._local_sidereal_time: float = 0.0
 
         # ----------------------------------- Setup ---------------------------------- #
