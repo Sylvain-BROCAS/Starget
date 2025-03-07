@@ -237,6 +237,9 @@ class MKSMotor:
         command: list[int] = [0x97]
         return self._send_command(command)
 
+    def is_moving(self):
+        pass
+
     def move_constant_speed(self, dir:str, speed_rpm:float):
         """Move the motor at a constant speed. Command is of the form <adress> f6 <param> <tCHK>.
         param: 0babbb bbb with a:direction, b:speed
