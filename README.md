@@ -15,4 +15,4 @@ I recently wrote another article to present my project (It's written in french) 
 
 ## Acknowledgments
 Huge thanks to @RunTJoe that made another Alpaca project that helped me a lot understand how to build mine. Link to his Alpaca NINA compatible switches : https://github.com/RunTJoe/MiPyAlpaca
-@dhartkop has made a great work with his video about the reductor design i want to use with his [video](https://www.youtube.com/channel/UCwy2hl33Er2lLLREiwp_ang) and repository on the subject : 
+@dhartkop has made a great work with his video about the reductor design i want to use with his [video]([https://www.youtube.com/channel/UCwy2hl33Er2lLLREiwp_ang](https://www.youtube.com/watch?v=-VtbSvVxaFA)) and repository on the subject : 
