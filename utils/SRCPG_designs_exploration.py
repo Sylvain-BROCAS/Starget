@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mplcursors
 
-m = 0.5 # [mm] 1st stage module
-min_r = 110 # Min target ratio
+m = 0.4 # [mm] 1st stage module
+min_r = 100 # Min target ratio
 max_r = 130 # Max target ratio
 min_p = 3 # Min planet number | INT VALUE
 max_p = 5 # Max planet number | INT VALUE
-min_Dr1 = 45 # [mm] Min ring 1 diameter | INT VALUE
+min_Dr1 = 35 # [mm] Min ring 1 diameter | INT VALUE
 max_Dr1 = 65 # [mm] Max ring 1 diameter | INT VALUE
 
 
