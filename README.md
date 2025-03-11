@@ -12,7 +12,8 @@ Starget is an ultralight astronomical mount project. I want to develop an equato
 Here are some screen shots of the current state of the CAD:
 
 ![dessin](https://github.com/user-attachments/assets/e6cdfded-40d3-49fc-8dd4-796f2164dc75)<?xml version="1.0" encoding="UTF-8" standalone="no"?>
- NB : The equatorial base model is not mine, it's @MrDeepAddicte_362850's work. You can find it [here](https://www.printables.com/model/334593-polar-fine-adjustment-unit/comments).
+
+NB : The equatorial base model is not mine, it's @MrDeepAddicte_362850's work. You can find it [here](https://www.printables.com/model/334593-polar-fine-adjustment-unit/comments).
 ## More information about the project
 I wrote an Instructable about the exploratory phase of the project (Some things has changed since, it was only exploration) : [https://www.instructables.com/Goto-DSLR-Astrophotography-Mount/](https://www.instructables.com/Goto-DSLR-Astrophotography-Mount/)
 I recently wrote another article to present my project (It's written in french) : [ https://www.eos-projets.fr/projects/starget-presentation](https://www.eos-projets.fr/projects/starget-presentation)
