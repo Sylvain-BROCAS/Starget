@@ -1,0 +1,25 @@
+Split-Ring Compound-Planet Epicyclic Gear System Designer,,,,
+A great way to get high gear ratios with tons of tooth engagement in only a couple stages! :-D,,,,
+,,,,
+By David Hartkop,,,,
+Updated March 2018,,,,
+,,,,
+Input into green cells,Output in yellow.,,,
+,,,,
+Name,Symbol,# Teeth,Equations and consierations:,teeth OK?
+,,,,
+Input Diametral Pitch,Dp1,7,,
+Sun Gear 1 Toothcount,Ns1,18,Ns1 must be evenly divisible by P,GOOD
+Planet Gears 1 Toothcount,Np1,36,"Np1=(Na1-Ns1)/2, bust be whole #",GOOD
+Annulus Gear 1 Toothcount,Na1,90,Na1 must be evenly divisible by P,GOOD
+,, ,,
+Output Diametral Pitch,Dp2,7.388888889,Dp2=(Dp1*(Na2-Np2))/(Na1-Np1),
+Sun Gear 2 Toothcount,Ns2,21,"Ns2=Na2-(2*Np2), must be evenly divisible by P",GOOD
+Planet Gears 2 Toothcount,Np2,36,"Np2=Np1*n, must be whole #",GOOD
+Annulus Gear 2 Toothcount,Na2,93,"Na2=(n*Na1)+P, must be whole #",GOOD
+# of planets in carrier,P,3,Will this many planets fit around the annulus? Check your drawing...,
+2nd stage multiplier,n,1,Must be rational number.  ...does this make Na2 teeth too tiny?,
+,,,,
+Ratio First Stage,R1,6,R1=(Na1/Ns1)+1,
+Ratio Second Stage,R2,30,R2=(n*Na1)/(Na2-(n*Na1)),
+Final Ratio at Output Shaft,Rf,180,Rf=R1*R2,

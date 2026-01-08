@@ -1,0 +1,37 @@
+# Optimisation du système de base (Pi os light nu)
+
+## Mise à jour des paquets
+sudo apt update && sudo apt upgrade -y
+
+## Nettoyage
+sudo apt autoremove -y
+sudo apt autoclean
+
+# Réduire mémoire GPU (libère RAM pour astro)
+echo "gpu_mem=16" | sudo tee -a /boot/firmware/config.txt
+
+# Services non-critiques pour astro
+sudo systemctl disable bluetooth
+sudo systemctl disable cups # Si erreur : sûrement non installé ==> OK
+sudo systemctl disable avahi-daemon
+sudo systemctl disable triggerhappy
+
+# Optimisations mémoire et boot
+echo "gpu_mem=16" | sudo tee -a /boot/firmware/config.txt
+echo "disable_splash=1" | sudo tee -a /boot/firmware/config.txt
+echo "boot_delay=0" | sudo tee -a /boot/firmware/config.txt
+
+# Vérifier que c'est ajouté
+tail -5 /boot/firmware/config.txt
+
+# RAM actuelle
+free -h
+
+# Services actifs (doit être réduit)
+systemctl list-units --state=running --type=service | wc -l
+
+# CPU info
+lscpu | grep "Model name\|CPU max MHz"
+
+# Température
+vcgencmd measure_temp
