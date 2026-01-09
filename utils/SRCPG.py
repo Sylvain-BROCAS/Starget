@@ -62,6 +62,10 @@ class SRCPGConstraints:
     n_values: Sequence[float] = (1.0,)  # multiplicateur n (étage 2)
     min_teeth: int = 17  # nombre minimum de dents (évite sous-denture)
     planet_clearance_factor: float = 1.10  # marge grossière (moyeu/vis/impression)
+    
+    # Options impression 3D
+    enable_3d_printing: bool = False  # Activer les contraintes d'impression 3D
+    nozzle_diameter: float = 0.4  # mm, diamètre de buse pour impression 3D
 
 
 @dataclass
@@ -177,6 +181,20 @@ class SRCPGSolution:
         overall = max(od1, od2)
         if overall > constraints.max_diameter:
             errors.append(f"Encombrement: Ø≈{overall:.2f}mm > {constraints.max_diameter:.2f}mm")
+
+        # Contraintes impression 3D
+        if constraints.enable_3d_printing:
+            # Vérifier que les modules sont compatibles avec le diamètre de buse
+            min_module = constraints.nozzle_diameter * 2.0  # Module minimum = 2x diamètre buse pour des dents imprimables
+            if self.module_stage1 < min_module:
+                errors.append(f"Impression 3D: module_stage1={self.module_stage1:.2f}mm < {min_module:.2f}mm (2x buse {constraints.nozzle_diameter:.2f}mm)")
+            if self.module_stage2 < min_module:
+                errors.append(f"Impression 3D: module_stage2={self.module_stage2:.2f}mm < {min_module:.2f}mm (2x buse {constraints.nozzle_diameter:.2f}mm)")
+            
+            # Vérifier les rayons de courbure minimum (approximation pour profil involute)
+            min_curvature_radius = 0.38 * min(self.module_stage1, self.module_stage2)  # Rayon de courbure au pied de dent
+            if min_curvature_radius < constraints.nozzle_diameter:
+                errors.append(f"Impression 3D: rayon courbure min≈{min_curvature_radius:.2f}mm < buse {constraints.nozzle_diameter:.2f}mm")
 
         return len(errors) == 0, errors
 
